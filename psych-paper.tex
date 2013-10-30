@@ -1,0 +1,216 @@
+
+\documentclass[bibtotoc,liststotoc,BCOR5mm,DIV12, headings=openany, oneside]{scrbook}
+\usepackage[left=2cm,right=3cm,top=2cm,bottom=2cm,includeheadfoot]{geometry}
+\usepackage{bibgerm}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[colorlinks, linkcolor=black, urlcolor=blue,citecolor=black ]{hyperref}
+\usepackage[ngerman]{babel}
+\usepackage{tabularx}
+\usepackage{animate}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{amssymb,amsmath}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{transparent}
+\usepackage{setspace}
+\usepackage{subfig}
+\usepackage{amsthm}
+%\usepackage[round]{natbib}
+\usepackage{multirow}
+\usepackage{framed} % für farbige Umrahmungen von Definitionen
+\definecolor{shadecolor}{rgb}{0.9,0.9,0.98} % legt Farbe der Kästen fest
+\usepackage{float}
+\restylefloat{figure}
+
+\onehalfspacing
+% für Tabellen mit farbigen Zellen
+\usepackage{colortbl}
+%\usepackage[round]{natbib}
+
+%für Definitionen etc, die nicht automatisch kursiv sind:
+\usepackage{amsthm}
+%für Definitionen in farbigen Kästen:
+\usepackage{shadethm}
+
+% Für schönen R-Code:%%%%%%%%%%%%%%%%%%
+\usepackage{color}
+\usepackage{listings,relsize}
+\usepackage{textcomp}
+\lstloadlanguages{R}
+\lstdefinelanguage{Renhanced}[]{R}{%
+  morekeywords={acf,ar,arima,arima.sim,colMeans,colSums,is.na,is.null,%
+    mapply,ms,na.rm,nlmin,replicate,row.names,rowMeans,rowSums,seasonal,%
+    sys.time,system.time,ts.plot,which.max,which.min, quartz, pdf},
+  deletekeywords={c},
+  alsoletter={.\%},%
+  alsoother={:_\$}}
+\lstset{language=Renhanced,extendedchars=true,
+  basicstyle=\small\ttfamily,
+  commentstyle=\textsl,
+  keywordstyle=\mdseries,
+  showstringspaces=false,
+  index=[1][keywords], 
+  upquote=true, 
+  indexstyle=\indexfonction,
+  keywordstyle=\color[rgb]{0,0,1},
+  commentstyle=\color[rgb]{0.133,0.545,0.133},
+  stringstyle=\color[rgb]{0.627,0.126,0.941},
+  literate=%
+{~} {$\sim$}{1}
+{Ö}{{\"O}}1
+{Ä}{{\"A}}1
+{Ü}{{\"U}}1
+{ß}{{\ss}}2
+{ü}{{\"u}}1
+{ä}{{\"a}}1
+{ö}{{\"o}}1
+}
+\newcommand{\indexfonction}[1]{\index{#1@\texttt{#1}}}
+%\newcommand{\R}[1]{\lstinline{#1}}
+\newcommand{\grWidth}{8cm}
+%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Beispiel}[section]
+% Nummerierung regeln:
+\numberwithin{equation}{section} %sets equation numbers <chapter>.<section>.<index>
+\numberwithin{definition}{section} %sets equation numbers <chapter>.<section>.<index>
+
+% Zeichen festlegen:
+% Lower Prevision:
+\newcommand{\LP}{
+\underline{P}
+}
+%Upper Prevision:
+\newcommand{\UP}{
+\bar{P}
+}
+%Lower natural Extension
+\newcommand{\LNE}{
+\underline{E}
+}
+%Upper natural Extension
+\newcommand{\UNE}{
+\bar{E}
+}
+
+\newcommand{\opt}{
+\text{opt}
+}
+
+\newcommand{\maxim}{
+\text{opt}_{>_{\LP}}
+}
+
+\newcommand{\ivd}{
+\sqsupset_{\LP}
+}
+
+\newcommand{\sdom}{
+>_{\LP}
+}
+
+\newcommand{\ext}{
+\text{ext}
+}
+
+\newcommand{\norm}{
+\text{norm}
+}
+
+\newcommand{\nfd}{
+\text{nfd}
+}
+
+\newcommand{\st}{
+\text{st}
+}
+
+\newcommand{\back}{
+\text{back}
+}
+
+\newcommand{\gamb}{
+\text{gamb}
+}
+% Für "Italien"
+\newcommand{\I}{
+\shorthandoff{"}I\shorthandon{"}
+}
+
+
+%Entscheidungsknoten:
+\newcommand{\EK}{
+D
+}
+
+%Zufallsknoten:
+\newcommand{\ZK}{
+C
+}
+
+%Entscheidung:
+\newcommand{\En}{
+d
+}
+
+%Ereignis
+\newcommand{\Er}{
+E
+}
+
+\newcommand{\rew}{
+u
+}
+
+\newcommand{\ev}{
+\text{ev}
+}
+% Komischen Einzug verhindern:
+\setlength{\parindent}{0em}
+
+%\numberwithin{equation}{subsection} %sets equation numbers <chapter>.<section>.<subsection>.<index>
+%\numberwithin{equation}
+
+%\begin{document}{subsubsection} %sets equation numbers <chapter>.<section>.<subsection>.<subsubsection>.<index>
+% wahrscheinlich auch mit chapter möglich.
+
+
+\begin{document}
+
+
+ 
+    %\input{/home/andreas/Desktop/Zusammen/InputBA/title.tex} 
+    %\thispagestyle{empty}
+ % \clearpage
+   % \input{/home/andreas/Desktop/Zusammen/InputBA/Abstract.tex}
+  %  \thispagestyle{empty}
+
+
+
+
+\frontmatter 
+ 
+    \thispagestyle{empty}
+    \tableofcontents 
+% ---------------------------------------------------------------
+\mainmatter % die eigentliche Arbeit
+
+\input{/home/andreas/Psychometrie-research/psych-paper-actual.tex}
+
+
+% ---------------------------------------------------------------
+%\backmatter % ab hier keine Nummerierung mehr
+
+
+ %   \listoffigures % Abbildungsverzeichnis 
+
+ %   \bibliographystyle{apalikeGer}
+ %   \bibliography{BALit3}
+
+\chapter{ }
+
+\end{document}

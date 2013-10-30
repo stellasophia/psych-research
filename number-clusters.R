@@ -18,27 +18,39 @@ numcluc <- function (data,nobs,nrep,method,h) {
 
 #bestimmt für Stichproben der Größe nobs die Anzahl der Cluster
 #simuliert das ganze nrep map
-numclukmeans <- function (data,nobs,nrep,method,h) {
+numclukmeans <- function (data,nobs,nrep,type="kmeans") {
   
   v <- c()
   for (i in 1:nrep){
-    daten.sp <- data[sample((x=1:nrow(data)), size=nobs, replace=T),]
+    samps <- sample((x=1:nrow(data)), size=nobs, replace=T)
+    print(samps)
+    daten.sp <- data[samps,]
     
     cor <- cor(as.matrix(daten.sp), use="pairwise.complete.obs", method="pearson")
+    print(cor[1,2])
     ####überführe in das Koordinatensystem
     dim <- dim(cor)[1] - 1
     dist <- getDist(cor, F)
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
-    result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
+    result <- getClusterNumbers(points=points, type=type)
     number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
-    print(measures(result))http://www.sueddeutsche.de/medien/ruhestand-im-rotlichtviertel-auf-arte-stellung-halten-1.1797499
+    print( number.cluster)
     v[[i]] <- number.cluster 
   }
   v
 }
 
-
+getClusterNumbers <- function(points, type="kmeans") {
+  if(type=="kmeans") {
+    result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
+  } else if(type=="complete") {
+    result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="complete")
+  } else if(type=="average") {
+    result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="average")
+  }
+  result
+}
 
 #bestimmt für Stichproben der Größe nobs die Anzahl der Cluster
 #simuliert das ganze nrep map
@@ -154,27 +166,40 @@ drawNumberComparisonFactor <- function(facs,nrep) {
 }
 
 
-
-
-drawNumberComparisonKmeans <- function(facs,nrep) {
+drawNumberComparisonKmeans <- function(facs,nrep, type="kmeans") {
   y<-11
   
-  nobs <- c(100,150,250,500,1000)
+  nobs <- c(100)
   vector <- c()
-  varvector <- c()
+  
   for(nob in nobs) {
-    vector <- as.vector(numclukmeans(facs, nob, nrep))
-    var <- mean(vector)
-    varvector <- append(varvector, var)
-    if(nob==nobs[1]) {
-      drawBarplot(vector,ylab=paste("Faktorenanalyse"),nob=nob, cex.lab=1.5)
-    } else {
-      drawBarplot(vector, ylab="relative Haeufigkeit", nob=nob)
+    
+    vector <- as.vector(numclukmeans(data=facs, nobs=nob, nrep=nrep, type=type))
+    print(vector)
+    
+    
+    m <- matrix( ncol=length(vector[[1]]), nrow=length(vector))
+    
+    m <- matrix( ncol=length(vector), nrow=length(vector[[1]]))
+    
+    for(i in 1:length(vector)) {
+      for(j in 1:length(vector[[1]])) {
+        m[j,i] <- vector[[i]][j]
+      }
     }
-    drawExpectedLine(y)
+    
+    par(mfrow=c(3,3))
+    ###aufteilen auf vektoren der einzelnen Methoden, die dann geplottet werden
+    for(i in 1:dim(m)[1]) {
+    if(nob==nobs[1]) {
+      drawBarplot(m[i,],ylab=paste("Faktorenanalyse"),nob=nob,type=type, cex.lab=1.5, method= measNames(result)[i])
+    } else {
+      drawBarplot(m[i,], ylab="relative Haeufigkeit",type=type, nob=nob, method=measNames(result)[i])
+    }
+   # drawExpectedLine(y)
   }
-  
-  
+}
+
 }
 
 
@@ -183,51 +208,17 @@ drawExpectedLine <-function(y) {
   abline(v=y-0.5, col="red", lwd=2)
 }
 
-drawBarplot <- function(data,ylab,nob,original,...) {
-  print("drawPlot!")
-  rel.table <- table(data)/length(data)
-  barplot(rel.table, main=paste("ganz=",original),  xlab="Anzahl Cluster", ylab=ylab, ylim=c(0,1),...)
+
+drawBarplot <- function(data,ylab,nob,type,method,...) {
+
+  data.rel <- table(data)/length(data)
   
+  barplot(data.rel, main=paste("n=",nob,"clustertype= ", type, "method= ", method),  xlab="Anzahl Cluster", ylab=ylab, ylim=c(0,1))
 }
 
 
+completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="average")
 
-averageCorrelation <- drawNumberComparison(facs, 30, "average",h=0.8, F)
+t <- drawKmeans(1,type="average") 
 
-completeCorrelation <- drawNumberComparison(facs, 30, "complete",h=1, F)
-
-averageCorrelationCorrelation <- drawNumberComparison(facs, 30, "average",h=0.8, T)
-
-completeCCorrelationCorrelation <- drawNumberComparison(facs, 30, "complete",h=1, T)
-
-drawKmeans <- function(nrep=5) {
-  dim <- dim(corM)[1] - 1
-  dist <- getDist(corM, F)
-  fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
-  points <- fit$points
-  result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
-  number.cluster.original <- as.numeric(as.character(optimalScores(result)[,3]))
-  
-  nobs <- c(100,150,250,500,1000)
-  for(nob in nobs) {
-    sample.values <- numclukmeans(facs, nob, nrep)
-    
-    par(mfrow=c(1,6))
-    names <-  measNames(result)
-    
-    for(i in 1:length(names)) {
-      name <- names[i]
-      hist <- c()
-      for(j in 1:nrep) {
-        hist <- append(hist, sample.values[[j]][i])
-      }
-      drawBarplot(data=hist, ylab=name,nob=nob, original=number.cluster.original[i])
-    }  
-    
-    
-  }
-}
-
-
-
-completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs, 1)
+test <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="complete")
