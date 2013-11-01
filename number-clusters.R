@@ -167,19 +167,13 @@ drawNumberComparisonFactor <- function(facs,nrep) {
 
 
 drawNumberComparisonKmeans <- function(facs,nrep, type="kmeans") {
-  y<-11
+
+
+  nob <- 100
+    
+  vector <- as.vector(numclukmeans(data=facs, nobs=nob, nrep=nrep, type=type))
+
   
-  nobs <- c(100)
-  vector <- c()
-  
-  for(nob in nobs) {
-    
-    vector <- as.vector(numclukmeans(data=facs, nobs=nob, nrep=nrep, type=type))
-    print(vector)
-    
-    
-    m <- matrix( ncol=length(vector[[1]]), nrow=length(vector))
-    
     m <- matrix( ncol=length(vector), nrow=length(vector[[1]]))
     
     for(i in 1:length(vector)) {
@@ -191,15 +185,8 @@ drawNumberComparisonKmeans <- function(facs,nrep, type="kmeans") {
     par(mfrow=c(3,3))
     ###aufteilen auf vektoren der einzelnen Methoden, die dann geplottet werden
     for(i in 1:dim(m)[1]) {
-    if(nob==nobs[1]) {
       drawBarplot(m[i,],ylab=paste("Faktorenanalyse"),nob=nob,type=type, cex.lab=1.5, method= measNames(result)[i])
-    } else {
-      drawBarplot(m[i,], ylab="relative Haeufigkeit",type=type, nob=nob, method=measNames(result)[i])
     }
-   # drawExpectedLine(y)
-  }
-}
-
 }
 
 
@@ -217,7 +204,11 @@ drawBarplot <- function(data,ylab,nob,type,method,...) {
 }
 
 
+completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="kmeans")
+
 completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="average")
+
+completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="complete")
 
 t <- drawKmeans(1,type="average") 
 

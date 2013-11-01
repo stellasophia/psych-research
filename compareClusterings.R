@@ -1,4 +1,8 @@
 library(psych)
+source("faktorensimulation.R")
+source("cmdsolve.R")
+source("Vergleichsverfahren.R")
+
 compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) {
   #  jpeg(paste("/home/andreas/Desktop/Bachelorarbeit/",NL,phi,comparing,".jpg"), width = 600, height = 400)
   
