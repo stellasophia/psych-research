@@ -170,7 +170,7 @@ compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, 
 
   print(results)
   
-  results
+  round(results, digits=4)
   
  # barplot(results, beside=T,main="Erkennen von Faktorenstrukturen",
 #          xlab="Clusterverfahren bei", ylab=mainText, ylim=c(0,1.0), col=gray.colors(length(results)), sub=optionstext,cex.names=1.3,font.names=2,cex.axis=,cex.main=1.5,cex.lab=1.5,cex.sub=1.5)
@@ -350,7 +350,7 @@ hierarchicalcomplete <- c("completecor","completecornom",  "completecorcor", "co
 #nonhierarchical <- c("kmeanscmd","kmeanscor", "kmeansneu")
 
 
-allsmall <- c("averagecor","completecor", "averagecorcor", "completecorcor","kmeansmds","kmeanskoord","kmeanscor")
+allsmall <- c("averagecor","completecor", "averagecorcor", "completecorcor","kmeansmds")
 
 kmeanscmd <- c("Dim1","Dim2","Dim3","Dim4","Dim10","Dim20","Dim30","kmeansmds" )
 
@@ -422,11 +422,37 @@ names <- c("allsmall")#,  "allsmall")
 #simulateClusterSamplesComparison(facs,toSimulate,compareWith, allnobs, 20,numbercluster=5,1 )
 
 
+
+
+
+getClusterSimiliarity.simulation <- function(NL.mus, Kor.mus, toSimulates) {
 #compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) 
 ##Die Bedingungen in den R's werden hier erzeugt
-r1 <- compareClusterings(0,0,0,0,1,toSimulates[[1]], addError=addError)
-r2 <- compareClusterings(0.1,0,0,0,1,toSimulates[[1]], addError=addError)
-r3 <- compareClusterings(0.2,0,0,0,1,toSimulates[[1]], addError=addError)
-r4 <- compareClusterings(0.1,0,0.4,0,1,toSimulates[[1]], addError=addError)
+  
+r.names <- c()
+descriptions <- ""
+for(i in 1:length(NL.mus)) {
+  r.names[i] <- paste0("constr ", i)
+  descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
+                         Nl.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
+}
+  
+rs <- matrix(nrow= length(NL.mus), ncol=length(toSimulates)) 
+rownames(rs) <- r.names
+colnames(rs) <- toSimulates
+for(i in 1:length(NL.mus))  {
+r1 <- compareClusterings(NL.mus[i],0,Kor.mus[i],0,1,toSimulates, addError=addError)
+print("now")
+print(r1)
+rs[i,] <- r1
+}
 
-rs <- rbind(r1,r2,r3,r4)
+paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("type ",type, "\n" , descriptions))
+rs
+}
+
+
+NL.mus <- c(0,0.1,0.2,0.1)
+Kor.mus <- c(0,0,0,0.4)
+
+test <- getClusterSimiliarity.simulation(NL.mus, Kor.mus, toSimulates[[1]])

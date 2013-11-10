@@ -1,3 +1,9 @@
+library(gridExtra)
+
+source("faktorensimulation.R")
+source("cmdsolve.R")
+source("Vergleichsverfahren.R")
+
 
 #bestimmt für Stichproben der Größe nobs die Anzahl der Cluster
 #simuliert das ganze nrep map
@@ -23,7 +29,7 @@ numcluadvanced.simulation <- function (cor,nrep,type="kmeans") {
 
 
 
-getClusterNumbers <- function(points, type="kmeans") {
+getClusterNumbers.simulation <- function(points, type="kmeans") {
   if(type=="kmeans") {
     result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
   } else if(type=="complete") {
@@ -35,7 +41,7 @@ getClusterNumbers <- function(points, type="kmeans") {
 }
 
 
-drawNumberClusterAdvanced<- function(cor,nrep, type="kmeans") {
+drawNumberClusterAdvanced.simulation <- function(cor,nrep, type="kmeans") {
   
   whole.cluster.number <- c()
   if(type=="kmeans")   {
@@ -46,8 +52,8 @@ drawNumberClusterAdvanced<- function(cor,nrep, type="kmeans") {
     whole.cluster.number <- whole.cluster.number.complete
   }
   
-  method.names <- c("APN" ,"AD" ,"ADM" ,"FOM","Connectivity", "Dunn" ,"Silhouette")
-  result.names <- c("whole", "Var", "Bias")  
+  
+  result.names <- c("whole", "Bias")  
   nobs <- c(500)
   
   
@@ -56,7 +62,7 @@ drawNumberClusterAdvanced<- function(cor,nrep, type="kmeans") {
   colnames(resultsmatrix) <- method.names
   
   for(o in 1:length(nobs)) {
-    vector <- as.vector(numcluadvanced(cor, nrep=nrep, type=type))
+    vector <- as.vector(numcluadvanced.simulation(cor, nrep=nrep, type=type))
     
     m <- matrix( ncol=length(vector), nrow=length(vector[[1]]))
     
@@ -78,9 +84,8 @@ drawNumberClusterAdvanced<- function(cor,nrep, type="kmeans") {
       method.whole <-  whole.cluster.number[i]
       
       resultsmatrix[1,i] <- method.whole
-      resultsmatrix[2,i] <- method.var
-      resultsmatrix[3,i] <- method.bias
-      
+      resultsmatrix[2,i] <- method.bias
+  
     }
     
   }
@@ -89,5 +94,35 @@ drawNumberClusterAdvanced<- function(cor,nrep, type="kmeans") {
   
 }
 
-corM1 <- setCorrelationMatrix(0.1,0,0,0, F)
-r1 <- drawNumberClusterAdvanced(corM1,1,type="kmeans")
+method.names <<- c("APN" ,"AD" ,"ADM" ,"FOM","Connectivity", "Dunn" ,"Silhouette")
+
+getClusterNumberBias.simulation <- function(NL.mus,  Kor.mus,  type="kmeans") {
+  
+  r.names <- c()
+  descriptions <- ""
+  for(i in 1:length(NL.mus)) {
+    r.names[i] <- paste0("constr ", i)
+    descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
+                           Nl.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
+  }
+  
+ 
+  
+  rs <- matrix(nrow=length(NL.mus), ncol=length(method.names))
+  rownames(rs) <- r.names
+  colnames(rs) <- method.names
+  for(i in 1:length(Nl.mus)) {
+    corM1 <- setCorrelationMatrix(NL.mus[i],0,Kor.mus[i],0, F)
+    r1 <- drawNumberClusterAdvanced.simulation(corM1,1,type="kmeans")
+    rs[i,] <- r1[2,]
+  }
+  paintTable(rs, "Clusteranzahlsabweichung bei EFA-Similation", 
+             paste0( "type=", type, " \n ", descriptions)) 
+}
+
+NL.mus <- c(0,0.1,0.2,0.1)
+Kor.mus <- c(0,0,0,0.4)
+
+getClusterNumberBias.simulation(NL.mus,Kor.mus,type="kmeans")
+
+

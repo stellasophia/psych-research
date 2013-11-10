@@ -1,7 +1,9 @@
 library(NbClust)
 library(clValid)
 
-
+source("faktorensimulation.R")
+source("cmdsolve.R")
+source("Vergleichsverfahren.R")
 
 
 #bestimmt für Stichproben der Größe nobs die Anzahl der Cluster
@@ -108,26 +110,32 @@ result.names <- c("whole", "Var", "Bias")
       method.bias <- mean(m[i,])
       method.whole <-  whole.cluster.number[i]
        
-      resultsmatrix[1,i] <- method.whole
-      resultsmatrix[2,i] <- method.var
-      resultsmatrix[3,i] <- method.bias
-      
+      resultsmatrix[1,i] <- round(method.whole, digits=4)
+      resultsmatrix[2,i] <- round(method.var, digits=4)
+      resultsmatrix[3,i] <- round(method.bias, digits=4)
     }
-  
   }
   
   resultsmatrix
   
 }
 
+#nur laufen lassen wenn noch nicht vorhanden
+#whole.cluster.number.kmeans <- numcluadvanced.whole(facs, type="kmeans")
+#whole.cluster.number.average <- numcluadvanced.whole(facs, type="average")
+#whole.cluster.number.complete <- numcluadvanced.whole(facs, type="complete")
 
-whole.cluster.number.kmeans <- numcluadvanced.whole(facs, type="kmeans")
-whole.cluster.number.average <- numcluadvanced.whole(facs, type="average")
-whole.cluster.number.complete <- numcluadvanced.whole(facs, type="complete")
+getClusterNumberBiasVariance.samples <- function(nrep, type) {
+r1 <- drawNumberClusterAdvanced(facs,nrep=nrep, type=type)
+paintTable(r1, "Clusteranzahlsgenauigkeit bei Samples", paste0("type ",type))
+r1
+}
 
-cluster.numbers.whole.complete
-r1 <- drawNumberClusterAdvanced(facs,nrep=10, type="kmeans")
+r1 <- getClusterNumberBiasVariance.samples(50,"kmeans")
 
+
+r2 <- getClusterNumberBiasVariance.samples(50,"average")
+r3 <- getClusterNumberBiasVariance.samples(50,"complete")
 #completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="average")
 
 #completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="complete")

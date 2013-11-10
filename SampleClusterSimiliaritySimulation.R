@@ -316,8 +316,11 @@ names <- c("additionalCor")#,  "allsmall")
 
 
 
+getClusterSimiliarity.samples <- function(nrep, numbercluster) {
+
+r <- simulateClusterSamplesComparison(facs,toSimulates[[1]],compareWith, allnobs, nrep=nrep,numbercluster=numbercluster,compareMethod=1 )
+paintTable(r, "Clusterübereinstimmung bei Simulation von Stichprobendaten", paste0("nrep ", nrep, " clusternumber ", numbercluster))
+}
 
 
-r <- simulateClusterSamplesComparison(facs,toSimulates[[1]],compareWith, allnobs, nrep=5,numbercluster=5,compareMethod=1 )
-
-
+getClusterSimiliarity.samples(10,5)
