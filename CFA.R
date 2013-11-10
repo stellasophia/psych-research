@@ -58,7 +58,9 @@ getClustering <- function(cor.sp, k, method) {
 
 getCFASimiliarity <- function(facs, nrep, nobs,method) {
   
-  for(i in 1:nrep) {
+  
+  measures <- c()
+  for(j in 1:nrep) {
     daten.sp1 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
     cor.sp1 <- cor(as.matrix(daten.sp1), use="pairwise.complete.obs", method="pearson")
     
@@ -88,8 +90,32 @@ getCFASimiliarity <- function(facs, nrep, nobs,method) {
       
     }
     
-    frame <- as.data.frame(facs)
-    fit <- cfa(latent.zuweisung,data = facs)
+    frame <- as.data.frame(cor.sp2)
+    fit <- cfa(latent.zuweisung,data = cor.sp2)
+    
+    meas <- fitMeasures(fit, c("BIC"))
+    measures[j] <- meas
     
   }
+  
+  mean(measures)
+}
+
+runCFR <- function() {
+
+methods <- c("averagecor","completecor","averagecorcor", "completecorcor", "kmeansmds")
+results <- c()
+
+for(method in methods) {
+result <- getCFASimiliarity(facs, 1, 100, method=method)
+results <- append(results, result)
+}
+
+
+names(results) <- methods
+###Normieren
+mean.results <- mean(results)
+results <- results - mean.results
+
+barplot(results, ylab="BIC", main="BIC der verschiedenen Verfahren bei CFR")
 }
