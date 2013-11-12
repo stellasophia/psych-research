@@ -1,6 +1,7 @@
 library(psych)
 source("faktorensimulation.R")
 source("cmdsolve.R")
+source("GesamtDatenAnalysen.R")
 source("Vergleichsverfahren.R")
 
 compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) {
@@ -188,7 +189,7 @@ getComparison <- function(toSimulates, names,distribution,addError=F) {
   if(addError) {
     error <- "Fehler"
   }
-  folder <- "/home/andreas/Desktop/Bachelorarbeit2/faktorbasis/"
+  folder <- "/home/andreas/Desktop/Bachelorarbeit2/faktorbasis5/"
   for(toSimulate in toSimulates) {
     jpeg(paste(folder,names[counter],"/NLzunehmend",error,".jpeg",sep=""), width = 1600, height = 800)
     
@@ -339,9 +340,41 @@ getComparison <- function(toSimulates, names,distribution,addError=F) {
   }
 }
 
+
+
+
+getClusterSimiliarity.simulation <- function(NL.mus, Kor.mus, toSimulates) {
+  #compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) 
+  ##Die Bedingungen in den R's werden hier erzeugt
+  
+  r.names <- c()
+  descriptions <- ""
+  for(i in 1:length(NL.mus)) {
+    r.names[i] <- paste0("constr ", i)
+    descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
+                           NL.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
+  }
+  
+  rs <- matrix(nrow= length(NL.mus), ncol=length(toSimulates)) 
+  rownames(rs) <- r.names
+  colnames(rs) <- toSimulates
+  for(i in 1:length(NL.mus))  {
+    r1 <- compareClusterings(NL.mus[i],0,Kor.mus[i],0,1,toSimulates, addError=addError)
+    print("now")
+    print(r1)
+    rs[i,] <- r1
+  }
+  
+  paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("type ",type, "\n" , descriptions))
+  rs
+}
+
+
+
+if(!exists("fa.ges")) {
 fa.ges <- fa(facs, nfactors=5, max.iter=100, fm="ml", rotate="promax", method="pearson")
 comparing <- apply(fa.ges$loadings,1,function(x) which.max(abs(x)))
-
+}
 hierarchicalaverage <- c("averagecor","averagecornom", "averagecorcor", "averageccnom")
 
 hierarchicalcomplete <- c("completecor","completecornom",  "completecorcor", "completeccnom")
@@ -379,7 +412,7 @@ names <- c("allsmall")
 
 
 distribution <- F
-getComparison(toSimulates,names,distribution, addError=F)
+#getComparison(toSimulates,names,distribution, addError=F)
 
 
 
@@ -402,11 +435,6 @@ names <- c("kmeanscmd")
 
 
 
-distribution <- T
-getComparison(toSimulates,names,distribution, addError=F)
-distribution <- F
-getComparison(toSimulates,names,distribution, addError=T)
-
 
 
 toSimulates[[1]] <- allsmall
@@ -425,34 +453,9 @@ names <- c("allsmall")#,  "allsmall")
 
 
 
-getClusterSimiliarity.simulation <- function(NL.mus, Kor.mus, toSimulates) {
-#compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) 
-##Die Bedingungen in den R's werden hier erzeugt
-  
-r.names <- c()
-descriptions <- ""
-for(i in 1:length(NL.mus)) {
-  r.names[i] <- paste0("constr ", i)
-  descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
-                         Nl.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
-}
-  
-rs <- matrix(nrow= length(NL.mus), ncol=length(toSimulates)) 
-rownames(rs) <- r.names
-colnames(rs) <- toSimulates
-for(i in 1:length(NL.mus))  {
-r1 <- compareClusterings(NL.mus[i],0,Kor.mus[i],0,1,toSimulates, addError=addError)
-print("now")
-print(r1)
-rs[i,] <- r1
-}
-
-paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("type ",type, "\n" , descriptions))
-rs
-}
 
 
-NL.mus <- c(0,0.1,0.2,0.1)
-Kor.mus <- c(0,0,0,0.4)
+#NL.mus <- c(0,0.1,0.2,0.1)
+#Kor.mus <- c(0,0,0,0.4)
 
-test <- getClusterSimiliarity.simulation(NL.mus, Kor.mus, toSimulates[[1]])
+#test <- getClusterSimiliarity.simulation(NL.mus, Kor.mus, toSimulates[[1]])

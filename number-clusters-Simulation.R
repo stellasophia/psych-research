@@ -17,7 +17,7 @@ numcluadvanced.simulation <- function (cor,nrep,type="kmeans") {
     dist <- getDist(cor, F)
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
-    result <- getClusterNumbers(points=points, type=type)
+    result <<- getClusterNumbers(points=points, type=type)
     number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
     print( number.cluster)
     v[[i]] <- number.cluster 
@@ -44,13 +44,8 @@ getClusterNumbers.simulation <- function(points, type="kmeans") {
 drawNumberClusterAdvanced.simulation <- function(cor,nrep, type="kmeans") {
   
   whole.cluster.number <- c()
-  if(type=="kmeans")   {
-    whole.cluster.number <- whole.cluster.number.kmeans
-  } else if(type=="average") {
-    whole.cluster.number <- whole.cluster.number.average
-  } else if(type=="complete") {
-    whole.cluster.number <- whole.cluster.number.complete
-  }
+
+    whole.cluster.number <- c(5,5,5,5,5,5,5)
   
   
   result.names <- c("whole", "Bias")  
@@ -103,7 +98,7 @@ getClusterNumberBias.simulation <- function(NL.mus,  Kor.mus,  type="kmeans") {
   for(i in 1:length(NL.mus)) {
     r.names[i] <- paste0("constr ", i)
     descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
-                           Nl.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
+                           NL.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
   }
   
  
@@ -111,7 +106,7 @@ getClusterNumberBias.simulation <- function(NL.mus,  Kor.mus,  type="kmeans") {
   rs <- matrix(nrow=length(NL.mus), ncol=length(method.names))
   rownames(rs) <- r.names
   colnames(rs) <- method.names
-  for(i in 1:length(Nl.mus)) {
+  for(i in 1:length(NL.mus)) {
     corM1 <- setCorrelationMatrix(NL.mus[i],0,Kor.mus[i],0, F)
     r1 <- drawNumberClusterAdvanced.simulation(corM1,1,type="kmeans")
     rs[i,] <- r1[2,]
@@ -120,9 +115,9 @@ getClusterNumberBias.simulation <- function(NL.mus,  Kor.mus,  type="kmeans") {
              paste0( "type=", type, " \n ", descriptions)) 
 }
 
-NL.mus <- c(0,0.1,0.2,0.1)
-Kor.mus <- c(0,0,0,0.4)
+#NL.mus <- c(0,0.1,0.2,0.1)
+#Kor.mus <- c(0,0,0,0.4)
 
-getClusterNumberBias.simulation(NL.mus,Kor.mus,type="kmeans")
+#getClusterNumberBias.simulation(NL.mus,Kor.mus,type="kmeans")
 
 

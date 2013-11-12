@@ -5,7 +5,6 @@ source("faktorensimulation.R")
 source("cmdsolve.R")
 source("Vergleichsverfahren.R")
 
-
 #bestimmt für Stichproben der Größe nobs die Anzahl der Cluster
 #simuliert das ganze nrep map
 numcluadvanced <- function (data,nobs,nrep,type="kmeans") {
@@ -24,7 +23,7 @@ numcluadvanced <- function (data,nobs,nrep,type="kmeans") {
     dist <- getDist(cor, F)
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
-    result <- getClusterNumbers(points=points, type=type)
+    result <<- getClusterNumbers(points=points, type=type)
     number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
     print( number.cluster)
     v[[i]] <- number.cluster 
@@ -48,7 +47,7 @@ numcluadvanced.whole <- function (data,type="kmeans") {
     dist <- getDist(cor, F)
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
-    result <- getClusterNumbers(points=points, type=type)
+    result <<- getClusterNumbers(points=points, type=type)
     number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
     print( number.cluster)
     v <- number.cluster 
@@ -121,9 +120,12 @@ result.names <- c("whole", "Var", "Bias")
 }
 
 #nur laufen lassen wenn noch nicht vorhanden
-#whole.cluster.number.kmeans <- numcluadvanced.whole(facs, type="kmeans")
-#whole.cluster.number.average <- numcluadvanced.whole(facs, type="average")
-#whole.cluster.number.complete <- numcluadvanced.whole(facs, type="complete")
+if(!exists("whole.cluster.number.kmeans")) {
+whole.cluster.number.kmeans <- numcluadvanced.whole(facs, type="kmeans")
+whole.cluster.number.average <- numcluadvanced.whole(facs, type="average")
+whole.cluster.number.complete <- numcluadvanced.whole(facs, type="complete")
+}
+
 
 getClusterNumberBiasVariance.samples <- function(nrep, type) {
 r1 <- drawNumberClusterAdvanced(facs,nrep=nrep, type=type)
@@ -131,11 +133,9 @@ paintTable(r1, "Clusteranzahlsgenauigkeit bei Samples", paste0("type ",type))
 r1
 }
 
-r1 <- getClusterNumberBiasVariance.samples(50,"kmeans")
-
-
-r2 <- getClusterNumberBiasVariance.samples(50,"average")
-r3 <- getClusterNumberBiasVariance.samples(50,"complete")
+#r1 <- getClusterNumberBiasVariance.samples(50,"kmeans")
+#r2 <- getClusterNumberBiasVariance.samples(50,"average")
+#r3 <- getClusterNumberBiasVariance.samples(50,"complete")
 #completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="average")
 
 #completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="complete")
