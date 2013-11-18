@@ -55,12 +55,15 @@ numcluadvanced.whole <- function (data,type="kmeans") {
 }
 
 getClusterNumbers <- function(points, type="kmeans") {
-  if(type=="kmeans") {
+  if(type=="kmeans" || type == "kmeansmds") {
     result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
-  } else if(type=="complete") {
+  } else if(type=="complete" || type=="completecor" || type=="completecorcor") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="complete")
-  } else if(type=="average") {
+  } else if(type=="average" || type=="averagecor" || type=="averagecorcor") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="average")
+  } else {
+   cat("not found! ", type)
+   result <- 0
   }
   result
 }

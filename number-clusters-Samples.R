@@ -45,10 +45,18 @@ numcluadvanced.whole <- function (data,type="kmeans") {
     ####überführe in das Koordinatensystem
     dim <- dim(cor)[1] - 1
     dist <- getDist(cor, F)
+
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
+    cat("2")
+    
+    points.save <<- points
+    type.save <<- type
+    cat("t")
     result <<- getClusterNumbers(points=points, type=type)
+    cat("s")
     number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
+    cat("3")
     print( number.cluster)
     v <- number.cluster 
  
@@ -58,9 +66,9 @@ numcluadvanced.whole <- function (data,type="kmeans") {
 getClusterNumbers <- function(points, type="kmeans") {
   if(type=="kmeans") {
     result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
-  } else if(type=="complete") {
+  } else if(type=="complete" || type=="completecor" || type=="completecorcor") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="complete")
-  } else if(type=="average") {
+  } else if(type=="average" || type=="averagecor" || type=="averagecorcor") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="average")
   }
   result

@@ -1,3 +1,4 @@
+source("GesamtDatenAnalysen.R")
 
 simulate <- function(cor.sp,nobs,nrep,k,method,wholecut,compareMethod,data,...) {
   
@@ -8,6 +9,8 @@ simulate <- function(cor.sp,nobs,nrep,k,method,wholecut,compareMethod,data,...) 
   w2 <- list()
   l1  <-  list()
   l2  <-  list()
+ 
+  
   
   cut.sp1 <- c()
   
@@ -204,7 +207,7 @@ compareMethod <- 2
 
 corM <- cor(facs, use="pairwise.complete.obs", method="pearson")
 #corcorM <- cor(corM, use="pairwise.complete.obs", method="pearson")
-
+if(!exists("averagecor")) {
 averagecor <- averageCor(corM,k) 
 averagecorcor <- averageCorCor(corM,k) 
 completecor <- completeCor(corM,k)
@@ -232,7 +235,7 @@ completecorcorcor <- completeCorCorCor(corM)
 kmeansmdscor <- cmdsolveCor(corM,k)
 kmeanscorcor <- kmeansCorCor(corM,k)
 #kmeansneucor <- kMeansOnDistancesCor(corM,k)
-
+}
 
 
 
@@ -246,6 +249,11 @@ kmeanscorcor <- kmeansCorCor(corM,k)
 
 #compares if there's a difference 
 
+getClusterSimiliarity.samples <- function(nrep, numbercluster) {
+  
+  r <- simulateClusterSamplesComparison(facs,toSimulates[[1]],compareWith, allnobs, nrep=nrep,numbercluster=numbercluster,compareMethod=1 )
+  paintTable(r, "Clusterübereinstimmung bei Simulation von Stichprobendaten", paste0("nrep ", nrep, " clusternumber ", numbercluster))
+}
 
 
 
@@ -295,14 +303,14 @@ names <- c("allsmall")#,  "allsmall")
 
 
 
-folder <- "/home/andreas/Desktop/Bachelorarbeit/strukturerhaltung/"
-for(i in 1:length(toSimulates)) {
-  jpeg(paste(folder,names[i],"/strukturerhaltung.jpeg",sep=""), width = 1200, height = 800)
-  
-  par(mfrow=c(2,2), oma=c(0,0,0,0), xpd=TRUE)
-simulateClusterSamplesComparison(facs,toSimulates[[i]],compareWith, allnobs, nrep=100,numbercluster=5,compareMethod=1 )
-  dev.off()
-}
+#folder <- "/home/andreas/Desktop/Bachelorarbeit/strukturerhaltung/"
+#for(i in 1:length(toSimulates)) {
+#  jpeg(paste(folder,names[i],"/strukturerhaltung.jpeg",sep=""), width = 1200, height = 800)
+#  
+#  par(mfrow=c(2,2), oma=c(0,0,0,0), xpd=TRUE)
+#simulateClusterSamplesComparison(facs,toSimulates[[i]],compareWith, allnobs, nrep=100,numbercluster=5,compareMethod=1 )
+#  dev.off()
+#}
 
 
 
@@ -316,11 +324,6 @@ names <- c("additionalCor")#,  "allsmall")
 
 
 
-getClusterSimiliarity.samples <- function(nrep, numbercluster) {
-
-r <- simulateClusterSamplesComparison(facs,toSimulates[[1]],compareWith, allnobs, nrep=nrep,numbercluster=numbercluster,compareMethod=1 )
-paintTable(r, "Clusterübereinstimmung bei Simulation von Stichprobendaten", paste0("nrep ", nrep, " clusternumber ", numbercluster))
-}
 
 
-getClusterSimiliarity.samples(10,5)
+#getClusterSimiliarity.samples(10,5)

@@ -111,6 +111,13 @@ nobs <- 48
 # diese Objekte werden für die Simulation gebraucht:
 
 
+syst.var  <-  function(x) {
+  result=matrix(NA,nrow=nrow(x),ncol=(ncol(x)-1))
+  for (i in 1:nrow(x)) {
+    result[i,] <- x[i,-which.max(x[i,])]^2
+  }
+  rowSums(abs(result))
+}
 
 
 #NL
@@ -126,9 +133,11 @@ nobs <- 48
 #2: 0.01 Korrelationen
 #3: 0.05 Korrelationen
 #4: NV-verteilte Korrelationen
-setCorrelationMatrix <- function(NLmean, NLsd, phimean,phisd, addError=F) {
+setCorrelationMatrix <- function(NLmean, NLsd, phimean,phisd, constant.NL = F, addError=F) {
   options1 <-""
   options2 <- ""
+  
+  original.fx <- NL.fixed(fa.ges$loadings, 0.05)
   
   Phi <- Phi.0(fa.ges$loadings)
   if(NLsd == 0) {
@@ -145,6 +154,13 @@ setCorrelationMatrix <- function(NLmean, NLsd, phimean,phisd, addError=F) {
   } else {
     Phi <- Phi.NV(fa.ges$Phi, phimean, phisd)
     options1 <- paste("Korrelation nv mit MW ", phimean, " und sd ", phisd)
+  }
+  
+  if(!constant.NL) {
+    for (i in 1:nrow(fx)) {
+      cat("original: ", fx[i,-which.max(fx[i,])][sample(1:(ncol(fx)-1),1,replace=T)], " now  ", sqrt(syst.var(original.fx)[i]))
+    #fx[i,-which.max(fx[i,])][sample(1:(ncol(fx)-1),1,replace=T)]<-sqrt(syst.var(original.fx)[i])
+    }
   }
   
   #fx <- fa.ges$loadings
