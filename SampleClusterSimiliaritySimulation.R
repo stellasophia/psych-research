@@ -1,4 +1,4 @@
-source("GesamtDatenAnalysen.R")
+source("compareClusterings.R")
 
 simulate <- function(cor.sp,nobs,nrep,k,method,wholecut,compareMethod,data,...) {
   
@@ -97,7 +97,7 @@ resultvalues <- c()
 
     cor.sp <- cor(as.matrix(daten.sp), use="pairwise.complete.obs", method="pearson")
    for(sim in toSimulate) {
-    newresult <-  simulate(cor.sp,nobs,nrep, numbercluster,method=sim,compareWith[[sim]], compareMethod,daten.sp)
+    newresult <-  simulate(cor.sp,nobs,nrep, k=numbercluster,method=sim,compareWith[[sim]], compareMethod,daten.sp)
     print(newresult)
     resultvalues <- append(resultvalues,newresult)
     resultnames <- sim
@@ -152,8 +152,8 @@ for(i in 1:length(simulationresults)) {
 }
 
 
-dataasmatrix00 <- matrix(c(dataasvector00), ncol=length(toSimulate), byrow=T)
-dataasmatrix11 <- matrix(c(dataasvector11), ncol=length(toSimulate), byrow=T)
+#dataasmatrix00 <- matrix(c(dataasvector00), ncol=length(toSimulate), byrow=T)
+#dataasmatrix11 <- matrix(c(dataasvector11), ncol=length(toSimulate), byrow=T)
 dataasmatrixall <- matrix(c(dataasvector00+dataasvector11), ncol=length(toSimulate), byrow=T)
 
 
@@ -181,77 +181,34 @@ print(t(dataasmatrix))
 }
 
 
-
-
-
-#Anzahl der Wiederholungen der Simulation
-nrep <- 20
-#die Stichprobengrößen
-allnobs <- c(100,150,250,500,1000)
-
-#die gewünschten Clusteranzahlen. Wenn Wert größer als 2 wird es als die Clusteranzahl interpretiert,
-#bei Werten kleiner als 2 als der Cutoff-wert h, in diesem Fall wird die Clusteranzahl für
-#den Stichprobendatensatz dann dynamisch bestimmt. Bei der Faktoranalyse muss dafür variableClusterNumber
-#auf True gesetzt werden
-#average Korrelation
-k <- 5
-#complete Korrelation
-
-
-#welcher Vergleichsalgorithmus gewählt wird:
-#1: normaler Rand-Index
-#2: Meila-Heckermann-Measure
-#3: Rand Index für Spezifität und Sensitivität
-compareMethod <- 2
-
-
-corM <- cor(facs, use="pairwise.complete.obs", method="pearson")
 #corcorM <- cor(corM, use="pairwise.complete.obs", method="pearson")
 if(!exists("averagecor")) {
+  k<-5
 averagecor <- averageCor(corM,k) 
 averagecorcor <- averageCorCor(corM,k) 
 completecor <- completeCor(corM,k)
 completecorcor <- completeCorCor(corM,k)
 kmeansmds <- cmdsolve(corM,k)
-kmeansmds1 <- cmdsolve(corM,k,dim=1)
-kmeansmds2 <- cmdsolve(corM,k,dim=2)
-kmeansmds3 <- cmdsolve(corM,k,dim=3)
 
-kmeansmds4 <- cmdsolve(corM,k,dim=4)
-kmeansmds10 <- cmdsolve(corM,k,dim=10)
-kmeansmds20 <- cmdsolve(corM,k,dim=20)
-kmeansmds30 <- cmdsolve(corM,k,dim=30)
-kmeansnew <- kMeansOnDistances(corM,k)
-kmeanscor <- kmeansCor(corM,k)
-averagecornometric <- averageCorNoMetric(corM,k) 
-averagecorcornometric <- averageCorCorNoMetric(corM,k) 
-completecornometric <- completeCorNoMetric(corM,k)
-completecorcornometric <- completeCorCorNoMetric(corM,k)
-completecorcornometric <- completeCorCorNoMetric(corM,k)
-totalclust <- kmeans(t(facs),centers=5,nstart=100)$cluster
-fclust <- fclustering(corM,k)
-averagecorcorcor <- averageCorCorCor(corM)
-completecorcorcor <- completeCorCorCor(corM)
-kmeansmdscor <- cmdsolveCor(corM,k)
-kmeanscorcor <- kmeansCorCor(corM,k)
+#kmeanscor <- kmeansCor(corM,k)
+#averagecornometric <- averageCorNoMetric(corM,k) 
+#averagecorcornometric <- averageCorCorNoMetric(corM,k) 
+#completecornometric <- completeCorNoMetric(corM,k)
+#completecorcornometric <- completeCorCorNoMetric(corM,k)
+#completecorcornometric <- completeCorCorNoMetric(corM,k)
+#totalclust <- kmeans(t(facs),centers=5,nstart=100)$cluster
+#fclust <- fclustering(corM,k)
+#averagecorcorcor <- averageCorCorCor(corM)
+#completecorcorcor <- completeCorCorCor(corM)
+#kmeansmdscor <- cmdsolveCor(corM,k)
+#kmeanscorcor <- kmeansCorCor(corM,k)
 #kmeansneucor <- kMeansOnDistancesCor(corM,k)
 }
 
 
-
-#hier findet die tatsächliche Simulation statt, in die Ähnlichkeit der Clusterung für verschiedene 
-#Stichprobengrößen vergelichen mit der Clusterung mit allen Daten (mit der gleichen Methode) für
-#jeweils alle Methoden vergleichen wird
-
-#toSimulate <- c("averagecor","completecor", "averagecorcor", "completecorcor", "kmeanscmd","kmeanscor")
-#toSimulate <- c("averagecor")
-
-
-#compares if there's a difference 
-
 getClusterSimiliarity.samples <- function(nrep, numbercluster) {
   
-  r <- simulateClusterSamplesComparison(facs,toSimulates[[1]],compareWith, allnobs, nrep=nrep,numbercluster=numbercluster,compareMethod=1 )
+  r <- simulateClusterSamplesComparison(facs,toSimulate,compareWith, allnobs, nrep=nrep,numbercluster=numbercluster,compareMethod=1 )
   paintTable(r, "Clusterübereinstimmung bei Simulation von Stichprobendaten", paste0("nrep ", nrep, " clusternumber ", numbercluster))
 }
 
@@ -259,71 +216,7 @@ getClusterSimiliarity.samples <- function(nrep, numbercluster) {
 
 
 compareWith <- list("averagecor" =averagecor, "completecor" = completecor, "averagecorcor" = averagecorcor,
-                    "completecorcor"= completecorcor,"kmeansmds" = kmeansmds, "kmeanskoord"=kmeansnew,
-                    "kmeanscor"=kmeanscor, 
-                    "averagecornom" = averagecornometric, "averagecorcornom" = averagecorcornometric, 
-                    "completecornom"=completecornometric,"completecorcornom"=completecorcornometric
-                    , "Dim4" = kmeansmds4, "Dim10" = kmeansmds10, "Dim20" = kmeansmds20, "Dim30" = kmeansmds30
-                    , "Dim1" = kmeansmds1,"Dim2" = kmeansmds2,
-                    "Dim3" = kmeansmds3, "totalclust"=totalclust, "averagecorcorcor"=averagecorcorcor,
-                    "completecorcorcor"=completecorcorcor,"kmeansmdscor"=kmeansmdscor,"kmeanscorcor"=kmeanscorcor,"faclust"=fclust)
+                    "completecorcor"= completecorcor,"kmeansmds" = kmeansmds)
 
 
 
-hierarchical <- c("averagecor", "averagecornom", "completecor","completecornom", "averagecorcor", "averagecorcornom",
-                  "completecorcor", 
-                  "completecorcornom")
-
-
-#nonhierarchical <- c("totalclust","kmeanscmd","kmeanscor","kmeansneu")
-
-
-allsmall <- c("averagecor","completecor", "averagecorcor", "completecorcor","kmeansmds")
-
-
-cmds <- c("Dim1","Dim2","Dim3","Dim4","Dim10","Dim20","Dim30","kmeansmds")
-
-
-additionalCor <- c("averagecorcor", "averagecorcorcor","completecorcor",
-                   "completecorcorcor", "kmeansmds", "kmeansmdscor", "kmeanscor","kmeanscorcor")
-
-toSimulates <- c()
-
-toSimulates[[1]] <- allsmall
-
-#toSimulates[[1]] <- hierarchical 
-
-#toSimulates[[2]] <- cmds
-
-distribution <- F
-
-names <- c("allsmall")#,  "allsmall")
-#toSimulate <- hierarchical
-#simulateClusterSamplesComparison(facs,toSimulate,compareWith, allnobs, 20,numbercluster=5,1 )
-
-
-
-#folder <- "/home/andreas/Desktop/Bachelorarbeit/strukturerhaltung/"
-#for(i in 1:length(toSimulates)) {
-#  jpeg(paste(folder,names[i],"/strukturerhaltung.jpeg",sep=""), width = 1200, height = 800)
-#  
-#  par(mfrow=c(2,2), oma=c(0,0,0,0), xpd=TRUE)
-#simulateClusterSamplesComparison(facs,toSimulates[[i]],compareWith, allnobs, nrep=100,numbercluster=5,compareMethod=1 )
-#  dev.off()
-#}
-
-
-
-
-#toSimulates[[2]] <- cmds
-
-distribution <- F
-
-names <- c("additionalCor")#,  "allsmall")
-#simulateClusterSamplesComparison(facs,toSimulate,compareWith, allnobs, 20,numbercluster=5,1 )
-
-
-
-
-
-#getClusterSimiliarity.samples(10,5)

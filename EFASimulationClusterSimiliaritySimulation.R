@@ -3,7 +3,7 @@ source("faktorensimulation.R")
 source("cmdsolve.R")
 source("GesamtDatenAnalysen.R")
 source("Vergleichsverfahren.R")
-compareClusterings(NL.mus[i],0,Kor.mus[i],0,comparing=1,toSimulates, addError=F)
+source("compareClusterings.R")
 
 compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing=1,toSimulate, nrep=1, addError=F) {
   #  jpeg(paste("/home/andreas/Desktop/Bachelorarbeit/",NL,phi,comparing,".jpg"), width = 600, height = 400)
@@ -45,7 +45,7 @@ compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing=1,toSimulate
 }
 
 
-getResults <- function(corM, toSimulate, comparing) {
+getResults <- function(corM, toSimulate, zuordnung.ges, comparing) {
   completecorresult <- 0
   completecorresult <- 0
   completecorcorresult <- 0
@@ -176,38 +176,38 @@ getResults <- function(corM, toSimulate, comparing) {
 
 
 
-getClusterSimiliarity.simulation <- function(NL.mus, Kor.mus, toSimulates, comparing) {
-  #compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) 
-  ##Die Bedingungen in den R's werden hier erzeugt
-  
-  r.names <- c()
-  descriptions <- ""
-  for(i in 1:length(NL.mus)) {
-    r.names[i] <- paste0("constr ", i)
-    descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
-                           NL.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
-  }
-  
-  rs <- matrix(nrow= length(NL.mus), ncol=length(toSimulates)) 
-  rownames(rs) <- r.names
-  colnames(rs) <- toSimulates
-  for(i in 1:length(NL.mus))  {
-    r1 <- compareClusterings(NL.mus[i],0,Kor.mus[i],0,comparing=1,toSimulates, addError=F)
-    print("now")
-    print(r1)
-    rs[i,] <- r1
-  }
-  
-  paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("type ",type, "\n" , descriptions))
-  rs
-}
+# getClusterSimiliarity.simulation <- function(NL.mus, Kor.mus, toSimulate, comparing) {
+#   #compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) 
+#   ##Die Bedingungen in den R's werden hier erzeugt
+#   
+#   r.names <- c()
+#   descriptions <- ""
+#   for(i in 1:length(NL.mus)) {
+#     r.names[i] <- paste0("constr ", i)
+#     descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
+#                            NL.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
+#   }
+#   
+#   rs <- matrix(nrow= length(NL.mus), ncol=length(toSimulate)) 
+#   rownames(rs) <- r.names
+#   colnames(rs) <- toSimulate
+#   for(i in 1:length(NL.mus))  {
+#     r1 <- compareClusterings(NL.mus[i],0,Kor.mus[i],0,comparing=1,toSimulate, addError=F)
+#     print("now")
+#     print(r1)
+#     rs[i,] <- r1
+#   }
+#   
+#   paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("type ",type, "\n" , descriptions))
+#   rs
+# }
 
 
 
 ###method 1 : NL alle gleich, ergeben zusammen Kommunalität
 ####### nur eine NL; entspricht Kommunalität
 ####### zwei, entsprechen zusammen Kommunalität
-getClusterSimiliarity.simulation.methods <- function(method=1, toSimulate, fa.ges) {
+getClusterSimiliarity.simulation.methods <- function(method=1, zuordnung.ges,  toSimulate, fa.ges) {
   #compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) 
   ##Die Bedingungen in den R's werden hier erzeugt
   
@@ -218,122 +218,42 @@ getClusterSimiliarity.simulation.methods <- function(method=1, toSimulate, fa.ge
   #  descriptions <- paste0(descriptions,  " und " , r.names[i] , " mit NL von ",
   #                         NL.mus[i], " und Faktorkorrelation von ", Kor.mus[i], " \n  ")
   #}
-  descriptions<- "bei allen NL gleich und entsprechen Kommunalität"
+  descriptions<- "bei allen NL gleich und entsprechen Kommunalität (NL.equal)"
+  
+  if(method==2) {
+    descriptions<- "bei einer NL und entsprechen Kommunalität (NL.one)"
+  } else if(method==3) {
+    descriptions<- "bei zwei NL und entsprechen Kommunalität (NL.two)"
+  }
   
   rs <- matrix(nrow= 1, ncol=length(toSimulate)) 
 
-  colnames(rs) <- toSimulates
+  colnames(rs) <- toSimulate
   #for(i in 1:length(NL.mus))  {
     #r1 <- compareClusterings(NL.mus[i],0,Kor.mus[i],0,1,toSimulates, addError=addError)
     
  
-  loads <- NL.equal(fa.ges$loadings)
+ loads <- NL.equal(fa.ges$loadings)
+  
+ # loads <- NL.fixed(fa.ges$loadings, 0.2)
   
   if(method==2) {
     loads <- NL.one(fa.ges$loadings)
   } else if(method == 3) {
     loads <- NL.two(fa.ges$loadings)
   }
+
   
+  Phi <- fa.ges$Phi
   
-  Phi <- Phi.fixed(fa.ges$Phi, 0)
   corM <- sim.structure(fx=loads,Phi=Phi,n=0)$model
   
  
-    rs[1,] <- getResults(corM, toSimulate, comparing)
+  rs[1,] <- getResults(corM, toSimulate,zuordnung.ges, comparing=1)
   
   
-  paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("type ",type, "\n" , descriptions))
+  paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("\n" , descriptions))
   rs
 }
 
 
-
-if(!exists("fa.ges")) {
-fa.ges <- fa(facs, nfactors=5, max.iter=100, fm="ml", rotate="promax", method="pearson")
-comparing <- apply(fa.ges$loadings,1,function(x) which.max(abs(x)))
-}
-hierarchicalaverage <- c("averagecor","averagecornom", "averagecorcor", "averageccnom")
-
-hierarchicalcomplete <- c("completecor","completecornom",  "completecorcor", "completeccnom")
-
-
-#nonhierarchical <- c("kmeanscmd","kmeanscor", "kmeansneu")
-
-
-allsmall <- c("averagecor","completecor", "averagecorcor", "completecorcor","kmeansmds")
-
-kmeanscmd <- c("Dim1","Dim2","Dim3","Dim4","Dim10","Dim20","Dim30","kmeansmds" )
-
-additionalCorhierarchial <- c("averagecorcor", "averagecorcorcor","completecorcor",
-                   "completecorcorcor")
-
-
-additionalCorNonhierarchial <- c("kmeansmds", "kmeansmdscor", "kmeanscor","kmeanscorcor")
-
-toSimulates <- c()
-
-
-toSimulates[[1]] <- allsmall
-
-#toSimulates[[1]] <- hierarchical
-
-#toSimulates[[1]] <- kmeanscmds
-distribution <- T
-
-names <- c("allsmall")
-
-#names <- c("hierarchical")
-
-#names <- c("kmeanscmd")
-
-
-
-distribution <- F
-#getComparison(toSimulates,names,distribution, addError=F)
-
-
-
-
-toSimulates <- c()
-
-
-toSimulates[[1]] <-  kmeanscmd
-
-#toSimulates[[1]] <- hierarchical
-
-#toSimulates[[1]] <- kmeanscmds
-distribution <- T
-
-names <- c("kmeanscmd")
-
-#names <- c("hierarchical")
-
-#names <- c("kmeanscmd")
-
-
-
-
-
-toSimulates[[1]] <- allsmall
-
-#toSimulates[[1]] <- hierarchical 
-
-#toSimulates[[2]] <- cmds
-
-distribution <- F
-
-names <- c("allsmall")#,  "allsmall")
-#toSimulate <- hierarchical
-#simulateClusterSamplesComparison(facs,toSimulate,compareWith, allnobs, 20,numbercluster=5,1 )
-
-
-
-
-
-
-
-#NL.mus <- c(0,0.1,0.2,0.1)
-#Kor.mus <- c(0,0,0,0.4)
-
-#test <- getClusterSimiliarity.simulation(NL.mus, Kor.mus, toSimulates[[1]])

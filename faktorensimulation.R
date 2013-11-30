@@ -5,9 +5,9 @@ library(psych)
 ## gerechnet wird
 
 ## dazu erst eine kurze Analyse der Nebenladungen des Hauptdatensatzes:
-facs <- na.omit(facs)
-fa.ges <- fa(facs, nfactors=5, max.iter=100, fm="ml", rotate="promax", method="pearson")
-zuordnung.ges <- apply(fa.ges$loadings,1,function(x) which.max(abs(x)))
+#facs <- na.omit(facs)
+#fa.ges <- fa(facs, nfactors=5, max.iter=100, fm="ml", rotate="promax", method="pearson")
+#zuordnung.ges <- apply(fa.ges$loadings,1,function(x) which.max(abs(x)))
 ## Funktion für Histrogramm der Nebenladungen 
 
 NL.hist <- function(x) {
@@ -117,6 +117,80 @@ syst.var  <-  function(x) {
     result[i,] <- x[i,-which.max(x[i,])]^2
   }
   rowSums(abs(result))
+}
+
+
+syst.var  <-  function(x) {
+  result=matrix(NA,nrow=nrow(x),ncol=(ncol(x)-1))
+  for (i in 1:nrow(x)) {
+    result[i,] <- x[i,-which.max(x[i,])]^2
+  }
+  rowSums(abs(result))
+}
+
+
+NL.equal <- function(x){
+  for (i in 1:nrow(x)) {
+    x[i,-which.max(x[i,])]=sqrt(syst.var(x)[i]/4)
+  }
+  x
+}
+
+NL.one <- function(x){
+  y <- x
+  for (i in 1:nrow(y)) {
+    y[i,-which.max(y[i,])]=0
+  }
+  
+  set.seed(1000)
+  for (i in 1:nrow(y)) {
+    y[i,-which.max(y[i,])][sample(1:4,1,replace=T)]=sqrt(syst.var(x)[i])
+  }
+  y
+}
+
+
+NL.two <- function(x){
+  y <- x
+  for (i in 1:nrow(y)) {
+    y[i,-which.max(y[i,])]=0
+  }
+  
+  set.seed(1000)
+  for (i in 1:nrow(y)) {
+    y[i,-which.max(y[i,])][sample(1:4,2,replace=T)]=sqrt(syst.var(x)[i]/2)
+  }
+  y
+}
+
+# Ladungsmatrix erstellen; m ist Wert, der für NL eingesetzt wird 
+NL.fixed <- function(x,m){
+  y <- x
+  for (i in 1:nrow(y)) {
+    y[i,-which.max(y[i,])]=0
+  }
+  
+  set.seed(1000)
+  for (i in 1:nrow(y)) {
+    y[i,-which.max(y[i,])][sample(1:4,m,replace=T)]=sqrt(syst.var(x)[i]/2)
+  }
+  y
+}
+
+# Ladungsmatrix erstellen; m ist Wert, der für NL eingesetzt wird 
+NL <- function(x,m){
+  for (i in 1:nrow(x)) {
+    x[i,-which.max(x[i,])]=m
+  }
+  x
+}
+
+# Korrelationsmatrix erstellen; m ist Wert, der für Phi eingesetzt wird 
+phi <- function(x,m){
+  for (i in 1:nrow(x)) {
+    x[i,-(1:i)]=m
+  }
+  x
 }
 
 

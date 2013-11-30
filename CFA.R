@@ -1,6 +1,6 @@
 library(lavaan)
 library(clValid)
-source("create-tables.R")
+
 
 
 
@@ -64,7 +64,7 @@ getClustering <- function(cor.sp, k, method) {
 getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod) {
   measures <- c()
   for(j in 1:nrep) {
-    daten.sp1 <<- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
+    daten.sp1 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
     cor.sp1 <- cor(as.matrix(daten.sp1), use="pairwise.complete.obs", method="pearson")
     
     daten.sp2 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
@@ -77,8 +77,11 @@ getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod) {
 
     method.names <- c("APN" ,"AD" ,"ADM" ,"FOM","Connectivity", "Dunn" ,"Silhouette")
     
-    names(number.cluster) <- method.names
     
+
+    names(number.cluster) <- method.names
+    cat("------------------------------", "\n")    
+    cat(method, " und ", numbermethod, "\n")
     k <- number.cluster[numbermethod]
     
     clustering <- getClustering(cor.sp1, k, method)
@@ -102,6 +105,8 @@ getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod) {
       
     }
     
+    
+    
     frame <- as.data.frame(cor.sp2)
     
     fit <- cfa(latent.zuweisung,data = frame)
@@ -114,15 +119,20 @@ getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod) {
       next;
     } else {
     meas <- fitMeasures(fit, c("BIC"))
-    cat("result ", meas)
     measures <- append(measures,meas)
+    
+    cat(latent.zuweisung, "\n")
+    cat(" Fit: ", meas,  "\n")
+    cat("------------", "\n")
     }
+    
+  
   }
   
   mean(measures)
 }
 
-runCFR <- function() {
+runCFR <- function(nrep, nobs) {
 
 methods <- c("averagecor","completecor","averagecorcor", "completecorcor", "kmeansmds")
 clusternumber.names <- c("APN" ,"Silhouette")
@@ -135,13 +145,13 @@ rownames(results.matrix) <- clusternumber.names
 
 for(i  in 1:length(methods)) {
   for(j in 1:length(clusternumber.names)) {
-    result <- getCFASimiliarity(facs, nrep=10, nobs=500, method=methods[i], numbermethod =clusternumber.names[j])
+    result <- getCFASimiliarity(facs, nrep=nrep, nobs=nobs, method=methods[i], numbermethod =clusternumber.names[j])
     results.matrix[j,i] <- result
   }
 }
 
 
-names(results) <- methods
+#names(results) <- methods
 ###Normieren
 
 results.mean <- mean(results.matrix)
@@ -152,6 +162,3 @@ results.matrix <- results.matrix - results.mean
 paintTable(results.matrix, "BIC bei konfirmatorischer CFA", paste0("nrep ", nrep))
 }
 
-
-results.matrix[1,] <- c(-865.6316 ,1219.924,-932.0334, -1231.937, -850.3803)
-results.matrix[2,] <- c(1216.987, -959.1829, -1193.86, -905.4362, -1213.829)

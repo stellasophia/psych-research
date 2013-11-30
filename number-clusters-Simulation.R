@@ -115,6 +115,58 @@ getClusterNumberBias.simulation <- function(NL.mus,  Kor.mus,  type="kmeans") {
              paste0( "type=", type, " \n ", descriptions)) 
 }
 
+
+
+
+
+
+getClusterNumberBias.simulation.methods <- function(method, fa.ges) {
+  
+  r.names <- c()
+  descriptions <- ""
+ 
+  
+  descriptions<- "bei allen NL gleich und entsprechen Kommunalität (NL.equal)"
+  
+  if(method==2) {
+    descriptions<- "bei einer NL und entsprechen Kommunalität (NL.one)"
+  } else if(method==3) {
+    descriptions<- "bei zwei NL und entsprechen Kommunalität (NL.two)"
+  }
+  
+  
+  
+  loads <- NL.equal(fa.ges$loadings)
+  
+  # loads <- NL.fixed(fa.ges$loadings, 0.2)
+  
+  if(method==2) {
+    loads <- NL.one(fa.ges$loadings)
+  } else if(method == 3) {
+    loads <- NL.two(fa.ges$loadings)
+  }
+  
+  zuordnung.ges <- apply(loads,1,function(x) which.max(abs(x)))
+  
+  Phi <- Phi.fixed(fa.ges$Phi, 0)
+  corM <- sim.structure(fx=loads,Phi=Phi,n=0)$model
+  
+  types <- c("kmeans", "average", "complete")
+  
+  rs <- matrix(nrow=length(types), ncol=length(method.names))
+  rownames(rs) <- types
+  colnames(rs) <- method.names
+
+  
+  for(i in 1:length(types)) {
+  r <- drawNumberClusterAdvanced.simulation(corM,1,types[i])
+  rs[i,] <- r[2,]
+  }
+
+  paintTable(rs, "Clusteranzahlsabweichung bei EFA-Similation mit 5 Faktoren", 
+             paste0(" \n ", descriptions)) 
+}
+
 #NL.mus <- c(0,0.1,0.2,0.1)
 #Kor.mus <- c(0,0,0,0.4)
 

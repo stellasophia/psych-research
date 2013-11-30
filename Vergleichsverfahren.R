@@ -31,6 +31,7 @@ randIndex <- function(x,y){
   counter2 <- 0
   for(i in 1:nrow(g1)) {
     for(j in 1:ncol(g2)) {
+      if(i!=j) {
       if(g1[i,j] == g2[i,j]) {
         if(g1[i,j]  == 0 ) {
           counter1 <- counter1 + 1
@@ -38,14 +39,15 @@ randIndex <- function(x,y){
           counter2 <- counter2 +1
         }
       }
+      }
     }
   }
   
   leng <- nrow(g1)
   
-  counter1 <- counter1/(leng*leng)
+  counter1 <- counter1/(leng*(leng-1))
   
-  counter2 <- counter2/(leng*leng)
+  counter2 <- counter2/(leng*(leng-1))
   
   result <- c(counter1,counter2)
 }

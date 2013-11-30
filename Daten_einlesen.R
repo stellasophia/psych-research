@@ -1,8 +1,13 @@
-####Einlesen der Daten
+#######im Moment von hier einlesen!!
 
-## Daten ?ffnen kurz
+library(psych)
+### Daten öffnen kurz  ###
+
+## Datensatz besteht aus Ziffern, die durch kein Zeichen getrennt sind
 
 raw <- readLines("/home/andreas/Desktop/NEOPIR_Ost.TXT")
+
+# Variablen werden einzeln extrahiert:
 
 klinisch <- as.factor(substring(raw,275,275))
 
@@ -10,12 +15,19 @@ NEO <- substring(raw, 23, 262)
 NEO <- lapply(strsplit(NEO, ""), as.numeric)
 NEO <- do.call(rbind, NEO)
 
+## Werte des NEO gehen von 1 bis 5 
+
 is.na(NEO) <- NEO>5
 summary(NEO)
 
+# Anzahl fehlender Werte
 sum(is.na(NEO))
 
-klinisch <- factor( klinisch, levels= c(1,2,3), labels = c("station?r","normal","ambulant"))
+klinisch <- factor( klinisch, levels= c(1,2,3), labels = c("stationär","normal","ambulant"))
+age <- as.numeric(substring(raw,272,273))
+sex <- as.factor(substring(raw,271,271))
+
+# hier werden die Items umkodiert, die andersherum gepolt sind
 
 NEOk <- NEO
 NEOk[,61] <- 6-NEO[,61]
@@ -131,11 +143,16 @@ NEOkod <- NEOk-1
 
 NEOdf <- as.data.frame(NEOkod)
 
+NEOdfa <- cbind(NEOdf,age)
+# NEOdfs <- cbind(NEOdf,sex)
 
+# nur noch den Teil des Datensatzes nehmen ohne die klinischen Patienten
 NEOdf <- NEOdf[klinisch=="normal",]
+NEOdfa <- NEOdfa[klinisch=="normal",]
+# NEOdfs <- NEOdfs[klinisch=="normal",]
 
-# aus NEOdf die Variablen extrahieren, die zu C1-C6 geh?ren (wie unten), am besten facs nennen; Variablen
-# die zu einer Facetten geh?ren sollen, gleich benennen (z.B. K1,K2...)
+
+## Summerwerte für Facetten bilden
 
 N1<-rowSums(NEOdf[,c(1,31,61,91,121,151,181,211)])
 E1<-rowSums(NEOdf[,c(2,32,62,92,122,152,182,212)])
@@ -168,21 +185,22 @@ O6<-rowSums(NEOdf[,c(28,58,88,118,148,178,208,238)])
 A6<-rowSums(NEOdf[,c(29,59,89,119,149,179,209,239)])
 C6<-rowSums(NEOdf[,c(30,60,90,120,150,180,210,240)])
 
+facs <- as.data.frame(cbind(N1,N2,N3,N4,N5,N6,E1,E2,E3,E4,E5,E6,O1,O2,O3,O4,O5,O6,A1,A2,A3,A4,A5,A6,C1,C2,C3,C4,C5,C6))
 
-#cols <- c(5,35,65,95,125,155,185,215, 10,40,70,100,130,160,190,220,
-#          15,45,75,105,135,165,195,225, 20,50,80,110,140,170,200,230,
-#          25,55,85,115,145,175,205,235, 30,60,90,120,150,180,210,240)
+## Analyse fehlender Werte
+
+table(rowSums(is.na(NEOdf))) # seltsamerweise keiner mit mehr als 24 fehlenden Werten; 10 haben nur fehlende Werte, die fallen sowieso immer raus
+hist(rowSums(is.na(NEOdf)))
+sum(rowSums(is.na(NEOdf))>24) # wieviele Fälle mit über 10% fehlender Werte
+rowSums(is.na(NEOdf))[rowSums(is.na(NEOdf))>24] #  wieviele fehlende Werte haben die (alle 240)
+which(rowSums(is.na(NEOdf))>24) # wer ist das?
+is.na(NEOdf[which(rowSums(is.na(NEOdf))>24),]) # wo haben sie die fehlenden Werte (überall)
+
+## Datensatz ohne unter 18jährigen
+
+facsad <- facs[age>17,]
 
 
-#N1, E2, O3, A4, C5
-cols <- c(1,31,61,91,121,151,181,211, 7,37,67,97,127,157,187,217, 13,43,73,103,133,163,193,223,
-          19,49,79,109,139,169,199,229, 25,55,85,115,145,175,205,235)
-
-#N2, E3, O4,A5,C6
-#cols <- c(6,36,66,96,126,156,186,216, 12,42,72,102,132,162,192,222,
-#          18,48,78,108,138,168,198,228, 24,54,84,114,144,174,204,234, 30,60,90,120,150,180,210,240)
-
-facs <- as.matrix((NEOdf[,cols]), ncols=48)
 
 
 corM <- cor(facs, use="pairwise.complete.obs", method="pearson")
@@ -191,4 +209,7 @@ corcorM <- cor(corM, use="pairwise.complete.obs", method="pearson")
 
 fa.ges <- fa(facs, nfactors=5, max.iter=100, fm="ml", rotate="promax", method="pearson")
 comparing <- apply(fa.ges$loadings,1,function(x) which.max(abs(x)))
+
+zuordnung.ges <- apply(fa.ges$loadings,1,function(x) which.max(abs(x)))
+
 

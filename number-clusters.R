@@ -40,7 +40,7 @@ numcluadvanced.whole <- function (data,type="kmeans") {
     daten.sp <- data
     
     cor <- cor(as.matrix(daten.sp), use="pairwise.complete.obs", method="pearson")
-    print(cor[1,2])
+
     ####überführe in das Koordinatensystem
     dim <- dim(cor)[1] - 1
     dist <- getDist(cor, F)
@@ -48,7 +48,7 @@ numcluadvanced.whole <- function (data,type="kmeans") {
     points <- fit$points
     result <- getClusterNumbers(points=points, type=type)
     number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
-    print( number.cluster)
+
     v <- number.cluster 
  
     v
