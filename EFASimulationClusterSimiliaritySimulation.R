@@ -246,7 +246,7 @@ getClusterSimiliarity.simulation.methods <- function(method=1, zuordnung.ges,  t
   
   Phi <- fa.ges$Phi
   
-  corM <- sim.structure(fx=loads,Phi=Phi,n=0)$model
+  corM <- sim.structure(fx=loads,Phi=Phi, uniq=fa.ges$uniquenesses, n=0)$model
   
  
   rs[1,] <- getResults(corM, toSimulate,zuordnung.ges, comparing=1)

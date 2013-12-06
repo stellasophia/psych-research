@@ -185,7 +185,16 @@ O6<-rowSums(NEOdf[,c(28,58,88,118,148,178,208,238)])
 A6<-rowSums(NEOdf[,c(29,59,89,119,149,179,209,239)])
 C6<-rowSums(NEOdf[,c(30,60,90,120,150,180,210,240)])
 
-facs <- as.data.frame(cbind(N1,N2,N3,N4,N5,N6,E1,E2,E3,E4,E5,E6,O1,O2,O3,O4,O5,O6,A1,A2,A3,A4,A5,A6,C1,C2,C3,C4,C5,C6))
+
+#N1, E2, O3, A4, C5
+  
+cols <- c(1,31,61,91,121,151,181,211, 7,37,67,97,127,157,187,217, 13,43,73,103,133,163,193,223,
+             
+                    19,49,79,109,139,169,199,229, 25,55,85,115,145,175,205,235)
+
+
+facs <- as.matrix((NEOdf[,cols]), ncols=48)
+#facs <- as.data.frame(cbind(N1,N2,N3,N4,N5,N6,E1,E2,E3,E4,E5,E6,O1,O2,O3,O4,O5,O6,A1,A2,A3,A4,A5,A6,C1,C2,C3,C4,C5,C6))
 
 ## Analyse fehlender Werte
 
