@@ -119,12 +119,11 @@ getClusterNumberBias.simulation <- function(NL.mus,  Kor.mus,  type="kmeans") {
 
 
 
-
-getClusterNumberBias.simulation.methods <- function(method, fa.ges) {
+getClusterNumberBias.simulation.methods.original <- function(method, fa.ges) {
   
   r.names <- c()
   descriptions <- ""
- 
+  
   
   descriptions<- "bei allen NL gleich und entsprechen Kommunalität (NL.equal)"
   
@@ -156,13 +155,73 @@ getClusterNumberBias.simulation.methods <- function(method, fa.ges) {
   rs <- matrix(nrow=length(types), ncol=length(method.names))
   rownames(rs) <- types
   colnames(rs) <- method.names
+  
+  
+  for(i in 1:length(types)) {
+    r <- drawNumberClusterAdvanced.simulation(corM,1,types[i])
+    rs[i,] <- r[2,]
+  }
+  
+  paintTable(rs, "Clusteranzahlsabweichung bei EFA-Similation mit 5 Faktoren",
+             paste0(" \n ", descriptions))
+}
+
+getClusterNumberBias.simulation.methods <- function(methods, fa.ges) {
+ 
+  r.names <- c()
+  descriptions <- ""
+ 
+  rs <- matrix(nrow=length(types)*length(method.names), ncol=2+length(methods))
+  colnames(rs) <- c("clustermethod", "clusternumber" , "Sim1", "Sim2", "Sim3")
+
+  colnames.rs <- c()
+  
+  for(m  in 1:length(methods)) {
+    
+    method <- methods[m]
+  descriptions<- paste0("Sim1 mit allen NL gleich und entsprechen Kommunalität (NL.equal)", 
+                        "Sim 2 bei einer NL und entsprechen Kommunalität (NL.one)", 
+                    "Sim3 bei zwei NL und entsprechen Kommunalität (NL.two)")
+  
+  loads <- NL.equal(fa.ges$loadings)
+  
+  # loads <- NL.fixed(fa.ges$loadings, 0.2)
+  
+  if(method==2) {
+    loads <- NL.one(fa.ges$loadings)
+  } else if(method == 3) {
+    loads <- NL.two(fa.ges$loadings)
+  }
+  
+  zuordnung.ges <- apply(loads,1,function(x) which.max(abs(x)))
+  
+  Phi <- Phi.fixed(fa.ges$Phi, 0)
+  corM <- sim.structure(fx=loads,Phi=Phi,n=0)$model
+  
+  types <- c("kmeans", "average", "complete")
+  
+ 
 
   
   for(i in 1:length(types)) {
   r <- drawNumberClusterAdvanced.simulation(corM,1,types[i])
-  rs[i,] <- r[2,]
+
+  cat("r: ", r)
+  for(mn in 1:length(method.names)) {
+    rs[(i-1)*length(method.names) + mn,2+m] <- r[2,mn]
+    method.name <- method.names[mn]
+    if(mn == 1) {
+    rs[(i-1)*length(method.names) + mn,1] <- types[i]
+    } else {
+      rs[(i-1)*length(method.names) + mn,1] <- ""
+    }
+    rs[(i-1)*length(method.names) + mn,2] <- method.names[mn]
+  }
   }
 
+  }
+  
+  rownames(rs) <- colnames.rs
   paintTable(rs, "Clusteranzahlsabweichung bei EFA-Similation mit 5 Faktoren", 
              paste0(" \n ", descriptions)) 
 }

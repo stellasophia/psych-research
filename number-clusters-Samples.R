@@ -135,9 +135,24 @@ whole.cluster.number.complete <- numcluadvanced.whole(facs, type="complete")
 }
 
 
-getClusterNumberBiasVariance.samples <- function(nrep, type) {
+getClusterNumberBiasVariance.samples <- function(nrep, types) {
+  
+  rs <- matrix(nrow = 5, ncol= length(types) * length(method.names) )
+  rs[1, ] <- ""
+for(i in 1:length(types)) {
 r1 <- drawNumberClusterAdvanced(facs,nrep=nrep, type=type)
-paintTable(r1, "Clusteranzahlsgenauigkeit bei Samples", paste0("type ",type))
+rs[1, (i-1) * length(method.names) + 1] <- types[i]
+rs[2, (i-1) * length(method.names) + 1:length(method.names)] <- method.names
+rs[3:5, (i-1) * length(method.names) + 1:length(method.names)] <- r1
+#rs 
+
+}
+  
+  rownames(rs) <- c("clustertype", "clusternumber", "whole", "Var", "Bias")
+  
+  paintTable(t(rs), "Clusteranzahlsgenauigkeit bei Samples", paste0("type ",type))
+  
+  
 r1
 }
 

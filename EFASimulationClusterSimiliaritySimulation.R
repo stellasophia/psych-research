@@ -207,7 +207,7 @@ getResults <- function(corM, toSimulate, zuordnung.ges, comparing) {
 ###method 1 : NL alle gleich, ergeben zusammen Kommunalität
 ####### nur eine NL; entspricht Kommunalität
 ####### zwei, entsprechen zusammen Kommunalität
-getClusterSimiliarity.simulation.methods <- function(method=1, zuordnung.ges,  toSimulate, fa.ges) {
+getClusterSimiliarity.simulation.methods <- function(methods, zuordnung.ges,  toSimulate, fa.ges) {
   #compareClusterings <- function(NLmean,NLsd,phimean,phisd, comparing,toSimulate, nrep=1, addError=F) 
   ##Die Bedingungen in den R's werden hier erzeugt
   
@@ -220,13 +220,18 @@ getClusterSimiliarity.simulation.methods <- function(method=1, zuordnung.ges,  t
   #}
   descriptions<- "bei allen NL gleich und entsprechen Kommunalität (NL.equal)"
   
+  rs <- matrix(nrow= 3, ncol=length(toSimulate)) 
+  
+  for( i in 1:length(methods)) {
+    
+  method <- methods[i]  
+    
   if(method==2) {
     descriptions<- "bei einer NL und entsprechen Kommunalität (NL.one)"
   } else if(method==3) {
     descriptions<- "bei zwei NL und entsprechen Kommunalität (NL.two)"
   }
   
-  rs <- matrix(nrow= 1, ncol=length(toSimulate)) 
 
   colnames(rs) <- toSimulate
   #for(i in 1:length(NL.mus))  {
@@ -249,8 +254,11 @@ getClusterSimiliarity.simulation.methods <- function(method=1, zuordnung.ges,  t
   corM <- sim.structure(fx=loads,Phi=Phi, uniq=fa.ges$uniquenesses, n=0)$model
   
  
-  rs[1,] <- getResults(corM, toSimulate,zuordnung.ges, comparing=1)
+  rs[i,] <- getResults(corM, toSimulate,zuordnung.ges, comparing=1)
   
+  }
+  
+  rownames(rs) <- c("Sim1", "Sim2", "Sim3")
   
   paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("\n" , descriptions))
   rs
