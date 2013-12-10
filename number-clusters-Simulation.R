@@ -17,28 +17,16 @@ numcluadvanced.simulation <- function (cor,nrep,type="kmeans") {
     dist <- getDist(cor, F)
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
-    result <<- getClusterNumbers(points=points, type=type)
-    number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
+
+    number.cluster  <<- getClusterNumbers(points=points, type=type)
+
+    
     print( number.cluster)
     v[[i]] <- number.cluster 
   }
   v
 }
 
-
-
-
-
-getClusterNumbers.simulation <- function(points, type="kmeans") {
-  if(type=="kmeans") {
-    result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
-  } else if(type=="complete") {
-    result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="complete")
-  } else if(type=="average") {
-    result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="average")
-  }
-  result
-}
 
 
 drawNumberClusterAdvanced.simulation <- function(cor,nrep, type="kmeans") {
@@ -73,7 +61,7 @@ drawNumberClusterAdvanced.simulation <- function(cor,nrep, type="kmeans") {
     ###aufteilen auf vektoren der einzelnen Methoden, die dann geplottet werden
     for(i in 1:dim(m)[1]) {
       #    drawBarplot(m[i,],ylab=paste("Faktorenanalyse"),nob=nob,type=type, cex.lab=1.5, method= measNames(result)[i])
-      method= measNames(result)[i]
+      #method= measNames(result)[i]
       method.var <- var(m[i,])
       method.bias <- mean(m[i,])
       method.whole <-  whole.cluster.number[i]
@@ -166,12 +154,12 @@ getClusterNumberBias.simulation.methods.original <- function(method, fa.ges) {
              paste0(" \n ", descriptions))
 }
 
-getClusterNumberBias.simulation.methods <- function(methods, fa.ges) {
+getClusterNumberBias.simulation.methods <- function(types, methods, fa.ges) {
  
   r.names <- c()
   descriptions <- ""
  
-  rs <- matrix(nrow=length(types)*length(method.names), ncol=2+length(methods))
+  rs <- matrix(nrow=(length(types)-1)*length(method.names) + length(method.names.EFA), ncol=2+length(methods))
   colnames(rs) <- c("clustermethod", "clusternumber" , "Sim1", "Sim2", "Sim3")
 
   colnames.rs <- c()
@@ -198,16 +186,20 @@ getClusterNumberBias.simulation.methods <- function(methods, fa.ges) {
   Phi <- Phi.fixed(fa.ges$Phi, 0)
   corM <- sim.structure(fx=loads,Phi=Phi,n=0)$model
   
-  types <- c("kmeans", "average", "complete")
-  
  
 
   
-  for(i in 1:length(types)) {
+  for(i in 1:(length(types))) {
   r <- drawNumberClusterAdvanced.simulation(corM,1,types[i])
 
   cat("r: ", r)
-  for(mn in 1:length(method.names)) {
+  method.names.size <- length(method.names)
+  
+  if(types[i]=="faclust") {
+    method.names.size <- length(method.names.EFA)
+  }
+  
+  for(mn in 1:method.names.size) {
     rs[(i-1)*length(method.names) + mn,2+m] <- r[2,mn]
     method.name <- method.names[mn]
     if(mn == 1) {
@@ -215,7 +207,11 @@ getClusterNumberBias.simulation.methods <- function(methods, fa.ges) {
     } else {
       rs[(i-1)*length(method.names) + mn,1] <- ""
     }
+    if(types[i] == "faclust") {
+      rs[(i-1)*length(method.names) + mn,2] <- method.names.EFA[mn]
+    } else {
     rs[(i-1)*length(method.names) + mn,2] <- method.names[mn]
+  }
   }
   }
 

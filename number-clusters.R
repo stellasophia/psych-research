@@ -61,6 +61,8 @@ getClusterNumbers <- function(points, type="kmeans") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="complete")
   } else if(type=="average" || type=="averagecor" || type=="averagecorcor") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="average")
+  } else if(type=="faclust") {
+    result <- EFA.Cluster.number(points=points)
   } else {
    cat("not found! ", type)
    result <- 0
@@ -68,6 +70,32 @@ getClusterNumbers <- function(points, type="kmeans") {
   result
 }
 
+
+EFA.Cluster.number <- function(daten.sp) {
+  
+  data <- daten.sp
+  map.sp <- VSS(daten.sp, rotate = "promax", fm = "mle", title="Anzahl der Faktoren")
+  map <-    which.min(map.sp$map)
+  
+  
+  pa.sp <- fa.parallel(daten.sp, fm="ml",n.iter=100)
+  
+  paralell.ncomp <- pa.sp$ncomp
+  paralell.nfact <- pa.sp$nfact
+  
+  
+  aic <- 1:14
+  for (j in 1:14) {
+    fa.sp <- fa(daten.sp, nfactors=j, max.iter=100, fm="ml", rotate="promax", method="pearson")
+    aic[j] <- (fa.sp$STATISTIC)-(2*(ncol(data)*(ncol(data)-1)/2-(ncol(data)*j+(j*(j-1)/2))))
+  }
+  aicmin <- which.min(aic)
+  
+  
+  clusternumber.EFA.methods <<- c("MAP", "Paralell-mcomp", "Paralell-nfact", "AIC")
+  clusternumbers <- c(map, paralell.ncomp, paralell.nfact, aicmin )
+  
+}
 
 drawNumberClusterAdvanced<- function(facs,nrep, type="kmeans") {
 

@@ -206,7 +206,6 @@ is.na(NEOdf[which(rowSums(is.na(NEOdf))>24),]) # wo haben sie die fehlenden Wert
 
 ## Datensatz ohne unter 18jährigen
 
-facsad <- facs[age>17,]
 
 
 

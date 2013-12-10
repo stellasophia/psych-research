@@ -23,8 +23,8 @@ numcluadvanced <- function (data,nobs,nrep,type="kmeans") {
     dist <- getDist(cor, F)
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
-    result <<- getClusterNumbers(points=points, type=type)
-    number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
+    number.cluster <- getClusterNumbers(points=points, type=type)
+    
     print( number.cluster)
     v[[i]] <- number.cluster 
   }
@@ -52,30 +52,65 @@ numcluadvanced.whole <- function (data,type="kmeans") {
     
     points.save <<- points
     type.save <<- type
-    cat("t")
-    result <<- getClusterNumbers(points=points, type=type)
-    cat("s")
-    number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
-    cat("3")
+
+    number.cluster <- getClusterNumbers(points=points, type=type)
+ 
     print( number.cluster)
     v <- number.cluster 
  
     v
 }
 
+
+
 getClusterNumbers <- function(points, type="kmeans") {
   if(type=="kmeans") {
     result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
+     result <-   as.numeric(as.character(optimalScores(result)[,3]))
   } else if(type=="complete" || type=="completecor" || type=="completecorcor") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="complete")
+    result <-   as.numeric(as.character(optimalScores(result)[,3]))
   } else if(type=="average" || type=="averagecor" || type=="averagecorcor") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="average")
+    result <-   as.numeric(as.character(optimalScores(result)[,3]))
+  } else if(type=="faclust") {
+    result <- EFA.Cluster.number(daten.sp = points)
   }
   result
 }
 
 
-drawNumberClusterAdvanced<- function(facs,nrep, type="kmeans") {
+
+EFA.Cluster.number <- function(daten.sp) {
+  
+  data <- daten.sp
+  map.sp <- VSS(daten.sp, rotate = "promax", fm = "mle", title="Anzahl der Faktoren")
+  map <-    which.min(map.sp$map)
+  
+  
+  pa.sp <- fa.parallel(daten.sp, fm="ml",n.iter=100)
+  
+  paralell.ncomp <- pa.sp$ncomp
+  paralell.nfact <- pa.sp$nfact
+  
+  
+  aic <- 1:14
+  for (j in 1:14) {
+    fa.sp <- fa(daten.sp, nfactors=j, max.iter=100, fm="ml", rotate="promax", method="pearson")
+    aic[j] <- (fa.sp$STATISTIC)-(2*(ncol(data)*(ncol(data)-1)/2-(ncol(data)*j+(j*(j-1)/2))))
+  }
+  aicmin <- which.min(aic)
+  
+  
+  method.names.EFA <<- c("MAP", "Paralell-mcomp", "Paralell-nfact", "AIC")
+  clusternumbers <- c(map, paralell.ncomp, paralell.nfact, aicmin )
+  
+}
+
+
+
+
+drawNumberClusterAdvanced<- function(facs,nrep, type="kmeans", nobs = c(500)) {
 
   whole.cluster.number <- c()
 if(type=="kmeans")   {
@@ -84,11 +119,14 @@ if(type=="kmeans")   {
   whole.cluster.number <- whole.cluster.number.average
 } else if(type=="complete") {
   whole.cluster.number <- whole.cluster.number.complete
+} else if(type=="faclust") {
+  whole.cluster.number <-  whole.cluster.number.faclust
 }
+
   
 method.names <- c("APN" ,"AD" ,"ADM" ,"FOM","Connectivity", "Dunn" ,"Silhouette")
 result.names <- c("whole", "Var", "Bias")  
-  nobs <- c(500)
+
   
   
   resultsmatrix <- matrix(nrow=length(result.names), ncol=length(method.names))
@@ -112,7 +150,11 @@ result.names <- c("whole", "Var", "Bias")
     ###aufteilen auf vektoren der einzelnen Methoden, die dann geplottet werden
     for(i in 1:dim(m)[1]) {
   #    drawBarplot(m[i,],ylab=paste("Faktorenanalyse"),nob=nob,type=type, cex.lab=1.5, method= measNames(result)[i])
-      method= measNames(result)[i]
+      if(type=="faclust") {
+        method <- method.names.EFA[i]
+      } else {
+      method= method.names[i]
+      }
       method.var <- var(m[i,])
       method.bias <- mean(m[i,])
       method.whole <-  whole.cluster.number[i]
@@ -132,18 +174,31 @@ if(!exists("whole.cluster.number.kmeans")) {
 whole.cluster.number.kmeans <- numcluadvanced.whole(facs, type="kmeans")
 whole.cluster.number.average <- numcluadvanced.whole(facs, type="average")
 whole.cluster.number.complete <- numcluadvanced.whole(facs, type="complete")
+whole.cluster.number.faclust <- numcluadvanced.whole(facs, type="faclust")
 }
 
 
 getClusterNumberBiasVariance.samples <- function(nrep, types) {
   
-  rs <- matrix(nrow = 5, ncol= length(types) * length(method.names) )
+  rs <- matrix(nrow = 5, ncol= (length(types) - 1) * length(method.names) + length( method.names.EFA)  )
   rs[1, ] <- ""
-for(i in 1:length(types)) {
+  
+  
+for(i in 1:(length(types))) {
+  
+  
+  type <- types[i]
 r1 <- drawNumberClusterAdvanced(facs,nrep=nrep, type=type)
+  cat(paste0("type : ", type, " ", r1))
 rs[1, (i-1) * length(method.names) + 1] <- types[i]
-rs[2, (i-1) * length(method.names) + 1:length(method.names)] <- method.names
-rs[3:5, (i-1) * length(method.names) + 1:length(method.names)] <- r1
+  if(type=="faclust") {
+    rs[2, (i-1) * length(method.names) + 1:length(method.names.EFA)] <- method.names.EFA
+    rs[3:5, (i-1) * length(method.names) + 1:length(method.names.EFA)] <- r1[,length(method.names.EFA)]
+  } else {
+    rs[2, (i-1) * length(method.names) + 1:length(method.names)] <- method.names
+    rs[3:5, (i-1) * length(method.names) + 1:length(method.names)] <- r1
+  }
+
 #rs 
 
 }
@@ -153,7 +208,7 @@ rs[3:5, (i-1) * length(method.names) + 1:length(method.names)] <- r1
   paintTable(t(rs), "Clusteranzahlsgenauigkeit bei Samples", paste0("type ",type))
   
   
-r1
+rs
 }
 
 #r1 <- getClusterNumberBiasVariance.samples(50,"kmeans")

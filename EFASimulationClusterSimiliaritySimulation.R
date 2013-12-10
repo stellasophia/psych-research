@@ -168,6 +168,10 @@ getResults <- function(corM, toSimulate, zuordnung.ges, comparing) {
       completecorcor <- completeCorCorNoMetric(corM)
       completecorcornometricresult <- completecorcornometricresult  + sum(vergleich(zuordnung.ges,completecorcor, comparing))
       results <-append(results,completecorcornometricresult /nrep)
+    }  else if(sim=="faclust") {
+      completecorcor <- fclustering(corM)
+      completecorcornometricresult <- completecorcornometricresult  + sum(vergleich(zuordnung.ges,completecorcor, comparing))
+      results <-append(results,completecorcornometricresult /nrep)
     } 
   }
   results

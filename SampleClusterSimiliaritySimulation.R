@@ -97,8 +97,9 @@ resultvalues <- c()
 
     cor.sp <- cor(as.matrix(daten.sp), use="pairwise.complete.obs", method="pearson")
    for(sim in toSimulate) {
+     cat(sim)
     newresult <-  simulate(cor.sp,nobs,nrep, k=numbercluster,method=sim,compareWith[[sim]], compareMethod,daten.sp)
-    print(newresult)
+    cat("rrrsult " , newresult)
     resultvalues <- append(resultvalues,newresult)
     resultnames <- sim
   }
@@ -197,7 +198,7 @@ kmeansmds <- cmdsolve(corM,k)
 #completecorcornometric <- completeCorCorNoMetric(corM,k)
 #completecorcornometric <- completeCorCorNoMetric(corM,k)
 #totalclust <- kmeans(t(facs),centers=5,nstart=100)$cluster
-#fclust <- fclustering(corM,k)
+fclust <- fclustering(corM,k)
 #averagecorcorcor <- averageCorCorCor(corM)
 #completecorcorcor <- completeCorCorCor(corM)
 #kmeansmdscor <- cmdsolveCor(corM,k)
@@ -216,7 +217,7 @@ getClusterSimiliarity.samples <- function(nrep, numbercluster) {
 
 
 compareWith <- list("averagecor" =averagecor, "completecor" = completecor, "averagecorcor" = averagecorcor,
-                    "completecorcor"= completecorcor,"kmeansmds" = kmeansmds)
+                    "completecorcor"= completecorcor,"kmeansmds" = kmeansmds, "faclust" = fclust)
 
 
 
