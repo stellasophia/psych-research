@@ -18,7 +18,7 @@ numcluadvanced.simulation <- function (cor,nrep,type="kmeans") {
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
 
-    number.cluster  <<- getClusterNumbers(points=points, type=type)
+    number.cluster  <<- getClusterNumbers(points=points, cor.sp=cor, type=type)
 
     
     print( number.cluster)
@@ -184,13 +184,13 @@ getClusterNumberBias.simulation.methods <- function(types, methods, fa.ges) {
   zuordnung.ges <- apply(loads,1,function(x) which.max(abs(x)))
   
   Phi <- Phi.fixed(fa.ges$Phi, 0)
-  corM <- sim.structure(fx=loads,Phi=Phi,n=0)$model
+  cor <- sim.structure(fx=loads,Phi=Phi,n=0)$model
   
  
 
   
   for(i in 1:(length(types))) {
-  r <- drawNumberClusterAdvanced.simulation(corM,1,types[i])
+  r <- drawNumberClusterAdvanced.simulation(cor,1,types[i])
 
   cat("r: ", r)
   method.names.size <- length(method.names)

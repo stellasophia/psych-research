@@ -61,31 +61,33 @@ getClustering <- function(cor.sp, k, method) {
 }
 
 
-getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod) {
+
+getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod,daten.sp1, daten.sp2,  efa=F) {
   measures <- c()
-  for(j in 1:nrep) {
-    daten.sp1 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
+
+  #  daten.sp1 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
     cor.sp1 <- cor(as.matrix(daten.sp1), use="pairwise.complete.obs", method="pearson")
     
-    daten.sp2 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
+  #  daten.sp2 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
     cor.sp2 <- cor(as.matrix(daten.sp2), use="pairwise.complete.obs", method="pearson")
-    
-    cor.ges <-  cor(facs, use="pairwise.complete.obs", method="pearson")
+
     
 
     number.cluster <- numcluadvanced.whole(daten.sp1, type=method)
 
-    method.names <- c("APN" ,"AD" ,"ADM" ,"FOM","Connectivity", "Dunn" ,"Silhouette")
-    
+    method.names <- method.names.normal
+    if(efa) {
+      method.names <-method.names.EFA
+    }
     
 
     names(number.cluster) <- method.names
     cat("------------------------------", "\n")    
     cat(method, " und ", numbermethod, "\n")
     k <- number.cluster[numbermethod]
-    
+    cat("k :", k)
     clustering <- getClustering(cor.sp1, k, method)
-    
+    cat("clustering :", clustering)
     latent.zuweisung <- ''
     
     for(i in 1:k) {
@@ -105,21 +107,24 @@ getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod) {
       
     }
     
-    
+    cat("latent.zuweiung: ", latent.zuweisung)
     
     frame <- as.data.frame(cor.sp2)
     
     fit <- cfa(latent.zuweisung,data = frame)
   
+    cat("beforelogLk")
+    
     test <-  try(logLik(fit))
       
     if(  class(test) == "try-error")  {
 
       print("error thrown")
-      next;
+      meas <- -1
     } else {
+      cat("before meas")
     meas <- fitMeasures(fit, c("BIC"))
-    measures <- append(measures,meas)
+    cat("meas: ", meas)
     
     cat(latent.zuweisung, "\n")
     cat(" Fit: ", meas,  "\n")
@@ -127,15 +132,18 @@ getCFASimiliarity <- function(facs, nrep, nobs,method, numbermethod) {
     }
     
   
-  }
-  
-  mean(measures)
+meas
 }
 
-runCFR <- function(nrep, nobs) {
+runCFR <- function(nrep, nobs, efa=F) {
 
 methods <- c("averagecor","completecor","averagecorcor", "completecorcor", "kmeansmds")
 clusternumber.names <- c("APN" ,"Silhouette")
+
+if(efa) {
+  methods <- c("faclust")
+  clusternumber.names <- c("MAP", "Paralell-mcomp", "Paralell-nfact", "AIC")
+}
 results <- c()
 
 results.matrix <- matrix(0, ncol=length(methods), nrow=length(clusternumber.names))
@@ -145,8 +153,14 @@ rownames(results.matrix) <- clusternumber.names
 
 for(i  in 1:length(methods)) {
   for(j in 1:length(clusternumber.names)) {
-    result <- getCFASimiliarity(facs, nrep=nrep, nobs=nobs, method=methods[i], numbermethod =clusternumber.names[j])
-    results.matrix[j,i] <- result
+    result <- c()
+for(z in 1:nrep) {
+    daten.sp1 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
+    daten.sp2 <- facs[sample(x=1:nrow(facs), size=nobs, replace=T),]
+    result <- append(result, getCFASimiliarity(facs, nrep=nrep, nobs=nobs, method=methods[i], numbermethod =clusternumber.names[j], efa=efa, daten.sp1 = daten.sp1,
+                                               daten.sp2 = daten.sp2))
+}
+    results.matrix[j,i] <- mean(result)
   }
 }
 
@@ -156,9 +170,22 @@ for(i  in 1:length(methods)) {
 
 results.mean <- mean(results.matrix)
 
-results.matrix <- results.matrix - results.mean
 
 #results.m <- t(as.matrix(results, 1)
 paintTable(results.matrix, "BIC bei konfirmatorischer CFA", paste0("nrep ", nrep))
 }
+
+
+
+output.cor.matrices <- function(nrep = 100, size=200) {
+  
+  daten.sp1 <- facs[sample(x=1:nrow(facs), size=size, replace=T),]
+  
+  cor.sp1 <- cor(as.matrix(daten.sp1), use="pairwise.complete.obs", method="pearson")
+  
+  
+}
+
+
+
 

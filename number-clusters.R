@@ -47,6 +47,7 @@ numcluadvanced.whole <- function (data,type="kmeans") {
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
     result <- getClusterNumbers(points=points, type=type)
+    cat("result: ", result)
     number.cluster <- as.numeric(as.character(optimalScores(result)[,3]))
 
     v <- number.cluster 
@@ -55,6 +56,7 @@ numcluadvanced.whole <- function (data,type="kmeans") {
 }
 
 getClusterNumbers <- function(points, type="kmeans") {
+  result <- 0
   if(type=="kmeans" || type == "kmeansmds") {
     result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
   } else if(type=="complete" || type=="completecor" || type=="completecorcor") {
@@ -152,12 +154,15 @@ result.names <- c("whole", "Var", "Bias")
 }
 
 
+
+if(!exists("whole.cluster.number.kmeans")) {
 whole.cluster.number.kmeans <- numcluadvanced.whole(facs, type="kmeans")
 whole.cluster.number.average <- numcluadvanced.whole(facs, type="average")
 whole.cluster.number.complete <- numcluadvanced.whole(facs, type="complete")
+}
 
 cluster.numbers.whole.complete
-r1 <- drawNumberClusterAdvanced(facs,nrep=10, type="kmeans")
+#r1 <- drawNumberClusterAdvanced(facs,nrep=10, type="kmeans")
 
 #completeCCorrelationCorrelation <- drawNumberComparisonKmeans(facs,nrep=30, type="average")
 

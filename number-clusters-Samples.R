@@ -23,7 +23,8 @@ numcluadvanced <- function (data,nobs,nrep,type="kmeans") {
     dist <- getDist(cor, F)
     fit <- cmdscale(d=dist,eig=TRUE, k=dim) # k is the number of dim
     points <- fit$points
-    number.cluster <- getClusterNumbers(points=points, type=type)
+    number.cluster <- getClusterNumbers(points=points,cor.sp = cor, type=type)
+    
     
     print( number.cluster)
     v[[i]] <- number.cluster 
@@ -53,7 +54,7 @@ numcluadvanced.whole <- function (data,type="kmeans") {
     points.save <<- points
     type.save <<- type
 
-    number.cluster <- getClusterNumbers(points=points, type=type)
+    number.cluster <- getClusterNumbers(points=points, cor.sp=cor, type=type)
  
     print( number.cluster)
     v <- number.cluster 
@@ -63,8 +64,8 @@ numcluadvanced.whole <- function (data,type="kmeans") {
 
 
 
-getClusterNumbers <- function(points, type="kmeans") {
-  if(type=="kmeans") {
+getClusterNumbers <- function(points,cor.sp, type="kmeans") {
+  if(type=="kmeans" || type=="kmeansmds") {
     result <- clValid(obj=points, nClust=2:15,clMethods="kmeans", validation=c("internal","stability"))
      result <-   as.numeric(as.character(optimalScores(result)[,3]))
   } else if(type=="complete" || type=="completecor" || type=="completecorcor") {
@@ -74,16 +75,17 @@ getClusterNumbers <- function(points, type="kmeans") {
     result <- clValid(obj=points, nClust=2:15,clMethods="hierarchical", validation=c("internal","stability"), method="average")
     result <-   as.numeric(as.character(optimalScores(result)[,3]))
   } else if(type=="faclust") {
-    result <- EFA.Cluster.number(daten.sp = points)
+    result <- EFA.Cluster.number(cor.sp = cor.sp)
   }
   result
 }
 
 
 
-EFA.Cluster.number <- function(daten.sp) {
+EFA.Cluster.number <- function(cor.sp) {
   
-  data <- daten.sp
+  data <- cor.sp
+  daten.sp <- cor.sp
   map.sp <- VSS(daten.sp, rotate = "promax", fm = "mle", title="Anzahl der Faktoren")
   map <-    which.min(map.sp$map)
   
@@ -96,13 +98,12 @@ EFA.Cluster.number <- function(daten.sp) {
   
   aic <- 1:14
   for (j in 1:14) {
-    fa.sp <- fa(daten.sp, nfactors=j, max.iter=100, fm="ml", rotate="promax", method="pearson")
+    fa.sp <- fa(daten.sp, nfactors=j, max.iter=100, fm="ml", rotate="promax", method="pearson", n.obs=100)
     aic[j] <- (fa.sp$STATISTIC)-(2*(ncol(data)*(ncol(data)-1)/2-(ncol(data)*j+(j*(j-1)/2))))
   }
   aicmin <- which.min(aic)
   
   
-  method.names.EFA <<- c("MAP", "Paralell-mcomp", "Paralell-nfact", "AIC")
   clusternumbers <- c(map, paralell.ncomp, paralell.nfact, aicmin )
   
 }
@@ -145,16 +146,20 @@ result.names <- c("whole", "Var", "Bias")
     }
     
   
+  cat("m:", m)
+  mglobal <<- m
   
    # par(mfrow=c(3,3))
     ###aufteilen auf vektoren der einzelnen Methoden, die dann geplottet werden
     for(i in 1:dim(m)[1]) {
   #    drawBarplot(m[i,],ylab=paste("Faktorenanalyse"),nob=nob,type=type, cex.lab=1.5, method= measNames(result)[i])
       if(type=="faclust") {
-        method <- method.names.EFA[i]
+        method = method.names.EFA[i]
       } else {
       method= method.names[i]
       }
+      
+      
       method.var <- var(m[i,])
       method.bias <- mean(m[i,])
       method.whole <-  whole.cluster.number[i]
@@ -164,6 +169,10 @@ result.names <- c("whole", "Var", "Bias")
       resultsmatrix[3,i] <- round(method.bias, digits=4)
     }
   }
+  
+  cat("resultsmatrix   " , resultsmatrix)
+  
+  global.resultsmatrix <<- resultsmatrix
   
   resultsmatrix
   
@@ -183,17 +192,18 @@ getClusterNumberBiasVariance.samples <- function(nrep, types) {
   rs <- matrix(nrow = 5, ncol= (length(types) - 1) * length(method.names) + length( method.names.EFA)  )
   rs[1, ] <- ""
   
-  
+  globalsave <<- c()
 for(i in 1:(length(types))) {
   
   
   type <- types[i]
 r1 <- drawNumberClusterAdvanced(facs,nrep=nrep, type=type)
+  globalsave[[i]] <<- r1
   cat(paste0("type : ", type, " ", r1))
 rs[1, (i-1) * length(method.names) + 1] <- types[i]
   if(type=="faclust") {
     rs[2, (i-1) * length(method.names) + 1:length(method.names.EFA)] <- method.names.EFA
-    rs[3:5, (i-1) * length(method.names) + 1:length(method.names.EFA)] <- r1[,length(method.names.EFA)]
+    rs[3:5, (i-1) * length(method.names) + 1:length(method.names.EFA)] <- r1[,1:length(method.names.EFA)]
   } else {
     rs[2, (i-1) * length(method.names) + 1:length(method.names)] <- method.names
     rs[3:5, (i-1) * length(method.names) + 1:length(method.names)] <- r1
