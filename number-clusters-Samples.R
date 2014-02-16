@@ -84,9 +84,10 @@ getClusterNumbers <- function(points,cor.sp, type="kmeans") {
 
 EFA.Cluster.number <- function(cor.sp) {
   
+  
   data <- cor.sp
   daten.sp <- cor.sp
-  map.sp <- VSS(daten.sp, rotate = "promax", fm = "mle", title="Anzahl der Faktoren")
+  map.sp <- VSS(daten.sp, rotate = "promax", fm = "mle", title="Anzahl der Faktoren", plot=F)
   map <-    which.min(map.sp$map)
   
   
@@ -103,7 +104,7 @@ EFA.Cluster.number <- function(cor.sp) {
   }
   aicmin <- which.min(aic)
   
-  
+
   clusternumbers <- c(map, paralell.ncomp, paralell.nfact, aicmin )
   
 }

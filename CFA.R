@@ -178,11 +178,13 @@ paintTable(results.matrix, "BIC bei konfirmatorischer CFA", paste0("nrep ", nrep
 
 
 output.cor.matrices <- function(nrep = 100, size=200) {
-  
+  for(i in 1:nrep) {
   daten.sp1 <- facs[sample(x=1:nrow(facs), size=size, replace=T),]
   
   cor.sp1 <- cor(as.matrix(daten.sp1), use="pairwise.complete.obs", method="pearson")
   
+  print(cor.sp1)
+  }
   
 }
 

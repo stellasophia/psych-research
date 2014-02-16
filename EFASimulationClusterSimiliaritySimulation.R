@@ -264,7 +264,7 @@ getClusterSimiliarity.simulation.methods <- function(methods, zuordnung.ges,  to
   
   rownames(rs) <- c("Sim1", "Sim2", "Sim3")
   
-  paintTable(rs, "Clusterübereinstimmung bei EFA-Simulation", paste0("\n" , descriptions))
+  paintTable(rs, "Clusteruebereinstimmung bei EFA", paste0("\n" , descriptions))
   rs
 }
 
